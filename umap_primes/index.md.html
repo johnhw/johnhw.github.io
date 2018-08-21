@@ -1,7 +1,12 @@
 <meta charset="utf-8">
 <!-- Markdeep: -->
 
-.<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+.<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script>
+window.markdeepOptions = {tocStyle:'none'};</script><script src="markdeep.min.js">
+</script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script>
+<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible");
+
+</script>
 
 
 # What do numbers look like?
@@ -20,6 +25,8 @@ more about the layout algorithm than any *"true"* structure of numbers. However,
 Each integer is represented
 as a vector, one element for each possible prime factor, where 0=prime factor not present, 1=prime factor present. This provides a simple geometry for the
 integers, where each number can be seen as being composed of prime basis vectors.
+
+For example, 10 might be represented as `[1 0 1 0 0 0 0 ...]` as it has factors 2 and 5 (the first and third primes respectively).
 
 These high-dimensional vectors are then squashed down
 from thousands of dimensions for each number to just two dimensions, and a point plotted at that coordinate. The points are coloured according to 
