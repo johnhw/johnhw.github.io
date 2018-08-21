@@ -33,6 +33,8 @@ from thousands of dimensions for each number to just two dimensions, and a point
 the original integer index; brighter colours correspond to larger numbers. The points are laid out so that numbers with similar "angles" to each other are close together. For example, all primes are at 90 degrees to each other, and all powers of a number are identical to each other (0 degree angle).
 
 
+
+
 ### Algorithm
 * for each `i` up to `n`
     * find prime factors of `i`. 
@@ -64,7 +66,9 @@ For example, for `n=11`, the matrix looks like:
 
 The image above is reduced from a 1000000x78628 (!) binary matrix to 1000000x2.  This only works because of the excellent sparse matrix support in UMAP.
 
-### Filtering
+
+
+### What are we seeing?
 
 The points can be filtered according to whatever criteria we might be interested in. For example, the parity of the numbers (even=green, odd=orange)
 ![Coloured by parity of the points](primes_even_odd_4k_crop.png)
@@ -73,6 +77,17 @@ or alternatively by the whether the points are prime or not (white=prime, blue=c
 ![Coloured by primeness of the points](is_prime_1k.png)
 
 As might be expected, the primes form the vague, diffuse cluster near the centre, as they are all orthogonal to each other.
+
+Extending this idea, we can colour the points by number of unique factors:
+![Coloured by number of unique factors](primes_colored_1k.png)
+
+#### The frontier
+It's worth noting that any structure that is not an algorithmic artificat is really the **frontier** of numbers at some threshold (in this case, 1 million). 
+*Every* possible 
+finite binary vector corresponds to at least one integer in this representation (actually, infinitely many, as all repeated factors are
+contracted onto a single binary indicator). Therefore, in the infinite set of integers, all points are present, at every possible angle or distance from 
+each other, and the space would be perfectly evenly filled. However, by cutting off at some specific `n`, we see the "surface" that we have reached by composing together primes such that
+their product is less than `n`.
 
 
 ### Code
