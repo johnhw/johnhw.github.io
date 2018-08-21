@@ -64,6 +64,17 @@ For example, for `n=11`, the matrix looks like:
 
 The image above is reduced from a 1000000x78628 (!) binary matrix to 1000000x2.  This only works because of the excellent sparse matrix support in UMAP.
 
+### Filtering
+
+The points can be filtered according to whatever criteria we might be interested in. For example, the parity of the numbers (even=green, odd=orange)
+![Coloured by parity of the points](primes_even_odd_4k_crop.png)
+
+or alternatively by the whether the points are prime or not (white=prime, blue=composite).
+![Coloured by primeness of the points](is_prime_1k.png)
+
+As might be expected, the primes form the vague, diffuse cluster near the centre, as they are all orthogonal to each other.
+
+
 ### Code
 
 The [python code is available](https://gist.github.com/johnhw/dfc7b8b8519aac530ac97da226c17bd5).
