@@ -8,6 +8,8 @@
 ![One million integers embedded into 2D space with UMAP](primes_umap_1e6_contrast_enhanced.png)
 
 This is the first million integers, represented as binary vectors indicating their prime factors, and laid out using the [UMAP dimensionality reduction algorithm](https://github.com/lmcinnes/umap) by Leland Mcinnes. 
+Each integer is represented in a high-dimensional space, and gets squished down to 2D so that numbers with similar prime factorisations are closer
+together than those with dissimilar factorisations.
 
 A very pretty structure emerges; this might be spurious in that it captures
 more about the layout algorithm than any *"true"* structure of numbers. However, the visual effect is very appealling and requires no tricky manipulation to create.
@@ -27,10 +29,12 @@ the original integer index; brighter colours correspond to larger numbers. The p
 ### Algorithm
 * for each `i` up to `n`
     * find prime factors of `i`. 
-    * For each `i`, make binary vector with `π(n)` columns (number of primes less than `n`), where each element has `1`=prime factor present, `0`=absent. 
+    * For each `i`, make binary vector with [`π(n)`](https://en.wikipedia.org/wiki/Prime-counting_function) columns (π(n) = number of primes less than `n`), where each element has `1`=prime factor present, `0`=absent. 
 * Stack all vectors into a large, sparse matrix 
     
 * Lay out with UMAP, using the cosine distance function (dot product).
+
+I used [`li(n)`](https://en.wikipedia.org/wiki/Logarithmic_integral_function) as a cheap upper bound on `π(n)` to estimate the number of columns needed.
 
 For example, for `n=11`, the matrix looks like:
 ```
@@ -56,3 +60,5 @@ The image above is reduced from a 1000000x78628 (!) binary matrix to 1000000x2. 
 ### Code
 
 The [python code is available](https://gist.github.com/johnhw/dfc7b8b8519aac530ac97da226c17bd5).
+
+[Massive ~10k resolution version [16Mb]](primes_umap_1e6_16k_tight_crop.png)
