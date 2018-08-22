@@ -81,6 +81,21 @@ As might be expected, the primes form the vague, diffuse cluster near the centre
 Extending this idea, we can colour the points by number of unique factors:
 ![Coloured by number of unique factors](primes_colored_1k.png)
 
+We can colour the points according to the prime factors they contain, where the log of the factor is mapped to hue, with redder=smaller, bluer=larger
+factor. This generalises the parity plot above. This plot has just a touch of spatial noise added to try and separate out the colours more clearly, 
+as each factor pass is rendered as a separate layer.
+![Coloured by factors present, hue mapped to prime factor](primes_mod_multispectral_4k_crop.png)
+
+#### Sequences
+We can look at where common sequences of numbers lie. This isn't particularly informative, but there is perhaps some pattern.
+
+For example, the Fibonacci sequence:
+![Fibonacci sequence numbers marked in yellow](primes_A000045.png)
+
+or the squares:
+![Squares marked in yellow](primes_A000290.png)
+
+
 #### The frontier
 It's worth noting that any structure that is not an algorithmic artificat is really the **frontier** of numbers at some threshold (in this case, 1 million). 
 *Every* possible 
