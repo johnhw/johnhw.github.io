@@ -156,7 +156,8 @@ var index_material = new THREE.ShaderMaterial({
         renderer.readRenderTargetPixels( bufferTexture, controls.mouseRenderX, controls.mouseRenderY, 1, 1, read );
         // convert color back into integer index        
         var index = ((read[0]<<16) + (read[1]<<8) + (read[2]));
-        material.uniforms.size.value = (n/(n_selected+1));
+        // adjust size to compensate if we only select a few values
+        material.uniforms.size.value = Math.sqrt(n/(n_selected+1));
         if(index!==0 && controls.tooltips)
         {                    
             tooltip.style.left = (controls.mousePageX-100) + "px";
