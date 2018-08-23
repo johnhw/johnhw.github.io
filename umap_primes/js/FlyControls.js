@@ -2,13 +2,6 @@
  * @author James Baicoianu / http://www.baicoianu.com/
  */
 
- //https://stackoverflow.com/questions/4075057/javascript-unfocus-a-textbox
-function blurAll(){
-	var tmp = document.createElement("input");
-	document.body.appendChild(tmp);
-	tmp.focus();
-	document.body.removeChild(tmp);
-   }
 
 THREE.FlyControls = function ( object, domElement ) {
 
@@ -38,11 +31,14 @@ THREE.FlyControls = function ( object, domElement ) {
 	this.rotationVector = new THREE.Vector3( 0, 0, 0 );
 	function test_tag(event)
 	{
-		if(!event.target || !event.target.tagName) return true;
+		/*if(!event.target || !event.target.tagName) return true;
 		var tag = event.target.tagName.toLowerCase();
 		if(tag!=="canvas" && !(tag==='div' && event.target.id==='container'))
 			return true;
-		
+			*/
+		if(document.activeElement!==this.container)
+			return true;
+				
 	}
 
 	this.handleEvent = function ( event ) {
@@ -132,13 +128,16 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.mousedown = function ( event ) {
-		
-		
+				
 		if (event.target==this.domElement) {
 
 			this.container.focus();
-
 		}
+		else
+		{
+			this.container.blur();
+		}
+
 		if(test_tag(event)) return true;
 		this.clicked = true;
 
