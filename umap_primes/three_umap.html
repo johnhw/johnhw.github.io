@@ -36,6 +36,11 @@
     <div class="text" id="predicate">
         Filter by predicate (JavaScript) on the index <code>i</code>. For example <code>i%2==0</code> selects even points. <code>true</code> selects all points again.
         <br> <a href="https://github.com/rsandor/number-theory"> number-theory </a> functions are available as <code>nt.xxx</code> (e.g. <code>nt.gcd(i,9)==3</code>)
+        <ul>
+        <li> If the predicate returns true/false, binary filtering is applied <code>i%2==0</code>
+        <li> If the predicate returns a float, the result will be used to colour the points, mapping 0.0->1.0 to the plasma colormap <code>i/1000000.0</code>
+        <li> If the predicate returns an array of 3 floats, the result will be used to colour the points as raw RGB <code>[i/1000000.0, i%2/2.0, i%5/5.0]</code>
+        </ul>
         <br>
             <textarea rows="2" cols="80" id="predicate_text"> true
                     </textarea> <button id="predicate_button" onclick="filter_points()"> Filter </button>

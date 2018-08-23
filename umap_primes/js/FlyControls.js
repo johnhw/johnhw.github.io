@@ -161,8 +161,9 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.mousemove = function ( event ) {
-		if(event.target.tagName.toLowerCase()!=="canvas")
+		if(event.target.tagName.toLowerCase()==="textarea")
 			return false;
+		
 		if ( ! this.dragToLook || this.mouseStatus > 0 ) {
 
 			var container = this.getContainerDimensions();
@@ -180,8 +181,9 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.mouseup = function ( event ) {
-		if(event.target.tagName.toLowerCase()!=="canvas")
-			return false;
+		if(event.target.tagName.toLowerCase()==="textarea")
+		return false;
+	
 		event.preventDefault();
 		event.stopPropagation();
 

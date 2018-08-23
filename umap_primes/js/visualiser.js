@@ -10,17 +10,42 @@
      element = document.getElementById("predicate_text");
      code = "var _pred = function(i) { return " + element.value + ";}";
      eval(code);
-     for (i = 0; i < n; i++) {
-         if (_pred(i)) {
-             colours[i * 3] = col_data[i * 3] / 255.0;
-             colours[i * 3 + 1] = col_data[i * 3 + 1] / 255.0;
-             colours[i * 3 + 2] = col_data[i * 3 + 2] / 255.0;
-         } else {
-             colours[i * 3] = 0.1;
-             colours[i * 3 + 1] = 0.1;
-             colours[i * 3 + 2] = 0.1;
-         }
-     }
+
+     // check if we are filtering, simple colouring, or full colouring
+     var test_result = _pred(5);
+     if(typeof(test_result)=="boolean")
+     {
+        for (i = 0; i < n; i++) {
+            if (_pred(i)) {
+                colours[i * 3] = col_data[i * 3] / 255.0;
+                colours[i * 3 + 1] = col_data[i * 3 + 1] / 255.0;
+                colours[i * 3 + 2] = col_data[i * 3 + 2] / 255.0;
+            } else {
+                colours[i * 3] = 0.1;
+                colours[i * 3 + 1] = 0.1;
+                colours[i * 3 + 2] = 0.1;
+            }
+        }
+    }
+    else if(typeof(test_result)=="number")
+    {
+       for (i = 0; i < n; i++) {
+           var rgb = plasma_cmap(_pred(i));           
+            colours[i * 3] = rgb.r;
+            colours[i * 3 + 1] = rgb.g;
+            colours[i * 3 + 2] = rgb.b;        
+       }
+   }
+   else if(test_result.length===3)
+   {
+        for (i = 0; i < n; i++) {
+            var rgb = _pred(i);           
+            colours[i * 3] = rgb[0];
+            colours[i * 3 + 1] = rgb[1];
+            colours[i * 3 + 2] = rgb[2];        
+        }
+   }
+   
      pt_buffer.attributes.color.needsUpdate = true;
  }
  // number theory functions
@@ -40,7 +65,9 @@
      // animate loop
      function animate() {
          requestAnimationFrame(animate);
-         controls.update(1);
+         // only update if focused
+         if(container===document.activeElement)
+            controls.update(1);
          renderer.render(scene, camera);
      }
 
