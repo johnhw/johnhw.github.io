@@ -70,7 +70,7 @@
          if (container === document.activeElement)
              controls.update(1);
         if(!controls.clicked)
-            pts.rotateY(0.0035);
+            pts.rotateY(0.0015);
          renderer.render(scene, camera);
          
      }
