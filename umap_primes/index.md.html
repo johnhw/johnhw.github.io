@@ -132,7 +132,8 @@ is to rerun the layout algorithm with a similar, sparse binary matrix, but with 
 To test this, I created a 1000000x78628 sparse matrix with the same density of 1s as the integer representation (approx 0.24% of the values being 1) and 
 reran the algorithm. The result is this:
 
-![A random control; layout of random points with same density and dimension](primes_umap_random_crop.png)
+![A random control; layout of random points with same density and dimension. Brightness artificially boosted to make
+results clearer.](primes_umap_random_crop.png)
 
 The same plasma colour map is used as in the first plot. The result **isn't** just random noise, so there clearly is some artifacting going on. I am 
 not sure what the blobby clusters represent, but they are possibly related to the count of 1s in each vector. Note, however, that the colouring
