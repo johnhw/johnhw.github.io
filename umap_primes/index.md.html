@@ -35,11 +35,24 @@ There is a WebGL live in-browser [3D viewer here](https://johnhw.github.io/umap_
 Much of the structure remains stable, which is very pleasing.  This plot uses the "false colouring" to colour the points, as explained in below.
 
 ## Representation
+Each natural number can be thought of as being *composed* of a number of simple elements: the product of their prime factors. For example 50 = 5 * 5 * 2. The prime
+factors are a basis ("building blocks") from which other numbers can be constructed.
+
+In a vector space, there is a similar concept. Any vector, like the 3D vector `[1,9,2]`, can be written as a sum of *basis vectors* such as the conventional:
+
+    [1,9,2] = 1 * [1,0,0] + 9 * [0,1,0] + 2 * [0,0,1]
+
+This visualisation links these two concepts. It *decomposes* each number into its basic components (the prime factors) and then creates a vector
+with bases which correspond to each prime building block. This gives a geometry to the numbers, and we can then apply concepts such as norm (distance)
+and inner product (angle) to this space. These are very high-dimensional vectors; more than 70,000 dimensions for the above image.
+
+
 Each integer is represented
 as a vector, one element for each possible prime factor, where 0=prime factor not present, 1=prime factor present. This provides a simple geometry for the
 integers, where each number can be seen as being composed of prime basis vectors.
 
-For example, 10 might be represented as `[1 0 1 0 0 0 0 ...]` as it has factors 2 and 5 (the first and third primes respectively).
+For example, 10 might be represented as `[1 0 1 0 0 0 0 ...]` as it has factors 2 and 5 (the first and third primes respectively). This isn't a *unique* representation,
+as it represents all repeated prime factors with the same vector (e.g. `2=[1 0 0 0...]` and `4=[1 0 0 0 ...]` and `8=[1 0 0 0 ...]`, etc.). 
 
 These high-dimensional vectors are then squashed down
 from thousands of dimensions for each number to just two dimensions, and a point plotted at that coordinate. The points are coloured according to 
