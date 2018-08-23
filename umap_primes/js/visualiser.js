@@ -62,14 +62,17 @@
 
      renderer.setSize(container.clientWidth, container.clientHeight);
      container.appendChild(renderer.domElement);
-
+     
      // animate loop
      function animate() {
          requestAnimationFrame(animate);
          // only update if focused
          if (container === document.activeElement)
              controls.update(1);
+        if(!controls.clicked)
+            pts.rotateY(0.0035);
          renderer.render(scene, camera);
+         
      }
 
      var dummy = new THREE.Object3D();
@@ -95,10 +98,15 @@
 
 
      var pts = new Float32Array(n * 3);
+     var mean=[0,0,0];
      for (i = 0; i < n; i++) {
          pts[i * 3] = pt_array.data[i * 3] / 32768.0;
          pts[i * 3 + 1] = pt_array.data[i * 3 + 1] / 32768.0;
          pts[i * 3 + 2] = pt_array.data[i * 3 + 2] / 32768.0;
+         mean[0] += pts[i*3];
+         mean[1] += pts[i*3+1];
+         mean[2] += pts[i*3+2];
+
      }
      if (color_mode === "factors") {
          for (i = 0; i < n; i++) {
@@ -131,8 +139,11 @@
 
      });
      var pts = new THREE.Points(pt_buffer, material);
+     
+     pt_buffer.translate(-mean[0]/n, -mean[1]/n, -mean[2]/n);
      pt_buffer.scale(2, 2, 2);
-     camera.lookAt(0, 0.7, 0);
+
+     camera.lookAt(0, 0.0, 0);
      scene.add(pts);
 
      var three_div = document.createElement('div');
