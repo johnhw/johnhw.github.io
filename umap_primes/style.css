@@ -1,0 +1,25 @@
+body
+{
+    color:#888899;
+    background: #000000; 
+}
+
+.heading 
+{
+    padding-top: 1em;
+    padding-left: 10px;
+    padding-bottom: 0em;
+    padding-right: 1em;
+    font-size: 20pt;
+    font-family: 'Comfortaa', serif;
+}
+
+.controls
+{
+    padding-top: 1em;
+    padding-left: 10px;
+    padding-bottom: 2em;
+    padding-right: 1em;
+    font-family: 'Comfortaa', serif;
+
+}
