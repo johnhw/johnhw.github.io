@@ -31,8 +31,8 @@
         <script src="https://threejs.org/examples/js/controls/FlyControls.js"></script>
         <script type="text/javascript" src="npy.js"></script>
         <script>
-
-            var plasma_cmap = interpolateArray(plasma);
+           // for plasma colouring
+           var plasma_cmap = interpolateArray(plasma);
             
             onloaded = function(pt_array, col_array)
             {
@@ -44,43 +44,40 @@
                 renderer.setSize( window.innerWidth, window.innerHeight );
                 document.body.appendChild( renderer.domElement );
 
+                // animate loop
                 function animate() {
                     requestAnimationFrame( animate );
                     controls.update(1);
-
-                   
-
                     renderer.render( scene, camera );
                 }
             
-
-                //constructs and empty object and attach controls to it
                 var dummy = new THREE.Object3D();
                 var controls = new THREE.FlyControls( camera );
 
                  //camera control properties
                  controls.movementSpeed = 0.015;
-                controls.domElement = window.document;
-                controls.rollSpeed = 0.01;
+                 controls.domElement = window.document;
+                 controls.rollSpeed = 0.01;
                 
-                controls.autoForward = false;
-                controls.dragToLook = true;
+                 controls.autoForward = false;
+                 controls.dragToLook = true;
                 
-                scene.add(dummy);
-                dummy.add(camera);
+                 scene.add(dummy);
+                 dummy.add(camera);
 
-                camera.position.z = 5;
+                 camera.position.z = 5;
                 
-                var n = 1000000;
+                 var n = 1000000;
 
-                var pt_buffer = new THREE.BufferGeometry();
+                 // Create the geometry, and set the attribute arrays
+                 var pt_buffer = new THREE.BufferGeometry();
                 
-                var colours = new Float32Array(n*3);
+                 var colours = new Float32Array(n*3);
                 for(i=0;i<n;i++)
                 {
-                    var rgb = plasma_cmap(i/n);
+                    /* var rgb = plasma_cmap(i/n);
                     
-                    /*colours[i*3] = rgb.r;
+                    colours[i*3] = rgb.r;
                     colours[i*3+1] = rgb.g;
                     colours[i*3+2] = rgb.b;                    */
 
@@ -89,19 +86,17 @@
                     colours[i*3+2] = col_array.data[i*3+2]/255.0;                    
                 }
                 
-                pt_buffer.addAttribute('position', new THREE.BufferAttribute(pt_array.data, 3));
-                
-                pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));
-                
+                pt_buffer.addAttribute('position', new THREE.BufferAttribute(pt_array.data, 3));                
+                pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));                
 
                 var material = new THREE.PointsMaterial( { size:0.008, sizeAttenuation: true, vertexColors: THREE.VertexColors, opacity:0.1, transparent:true,
                     blending:THREE.AdditiveBlending, depthTest:false
                 
                 } );
                 var pts = new THREE.Points( pt_buffer,  material );
-                pt_buffer.scale(0.2, 0.2, 1.0);
-                scene.add(pts);
+                pt_buffer.scale(0.2, 0.2, 0.2);
 
+                scene.add(pts);
                 animate();
             }
 
