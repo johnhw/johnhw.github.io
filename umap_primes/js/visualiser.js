@@ -149,21 +149,30 @@ var index_material = new THREE.ShaderMaterial({
 
      // animate loop
      function animate() {
-        var read = new Uint8Array(4);
-        pts.visible=false;
-        index_buffer_pts.visible=true;
-        renderer.render(scene, camera, bufferTexture);
-        renderer.readRenderTargetPixels( bufferTexture, controls.mouseRenderX, controls.mouseRenderY, 1, 1, read );
-        // convert color back into integer index        
-        var index = ((read[0]<<16) + (read[1]<<8) + (read[2]));
-        // adjust size to compensate if we only select a few values
-        material.uniforms.size.value = Math.sqrt(n/(n_selected+1));
-        if(index!==0 && controls.tooltips)
-        {                    
-            tooltip.style.left = (controls.mousePageX-100) + "px";
-            tooltip.style.top = (controls.mousePageY-20) + "px";
-            tooltip.style.display = 'block';
-            tooltip.innerHTML = index;
+        if(controls.tooltips)
+        {
+            // read back from the second buffer and find out
+            // the index under the cursor
+            var read = new Uint8Array(4);
+            pts.visible=false;
+            index_buffer_pts.visible=true;
+            renderer.render(scene, camera, bufferTexture);
+            renderer.readRenderTargetPixels( bufferTexture, controls.mouseRenderX, controls.mouseRenderY, 1, 1, read );
+            // convert color back into integer index        
+            var index = ((read[0]<<16) + (read[1]<<8) + (read[2]));
+            // adjust size to compensate if we only select a few values
+            material.uniforms.size.value = Math.sqrt(n/(n_selected+1));
+            if(index!==0 && controls.tooltips)
+            {                    
+                tooltip.style.left = (controls.mousePageX-100) + "px";
+                tooltip.style.top = (controls.mousePageY-20) + "px";
+                tooltip.style.display = 'block';
+                tooltip.innerHTML = index;
+            }
+            else
+            {
+                tooltip.style.display = 'none';
+            }
         }
         else
         {
