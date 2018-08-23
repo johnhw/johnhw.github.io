@@ -73,6 +73,7 @@
                  var pt_buffer = new THREE.BufferGeometry();
                 
                  var colours = new Float32Array(n*3);
+                 var pts = new Float32Array(n*3);
                 for(i=0;i<n;i++)
                 {
                     /* var rgb = plasma_cmap(i/n);
@@ -80,13 +81,16 @@
                     colours[i*3] = rgb.r;
                     colours[i*3+1] = rgb.g;
                     colours[i*3+2] = rgb.b;                    */
-
+                    
+                    pts[i*3] = pt_array.data[i*3] / 32768.0;
+                    pts[i*3+1] = pt_array.data[i*3+1] / 32768.0;
+                    pts[i*3+2] = pt_array.data[i*3+2] / 32768.0;
                     colours[i*3] = col_array.data[i*3]/255.0;
                     colours[i*3+1] = col_array.data[i*3+1]/255.0;
                     colours[i*3+2] = col_array.data[i*3+2]/255.0;                    
                 }
                 
-                pt_buffer.addAttribute('position', new THREE.BufferAttribute(pt_array.data, 3));                
+                pt_buffer.addAttribute('position', new THREE.BufferAttribute(pts, 3));                
                 pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));                
 
                 var material = new THREE.PointsMaterial( { size:0.008, sizeAttenuation: true, vertexColors: THREE.VertexColors, opacity:0.1, transparent:true,
@@ -94,8 +98,8 @@
                 
                 } );
                 var pts = new THREE.Points( pt_buffer,  material );
-                pt_buffer.scale(0.2, 0.2, 0.2);
-
+                pt_buffer.scale(2, 2, 2);
+                camera.lookAt(0,0.7,0);
                 scene.add(pts);
 
                 var three_div = document.createElement('div');
@@ -113,7 +117,7 @@
                 NumpyLoader.ajax("1e6_pts_rgb.npy", function (col_array) { onloaded(pt_array, col_array); });
             }
 
-            NumpyLoader.ajax("1e6_pts_3d.npy", onloaded_stage_1);
+            NumpyLoader.ajax("1e6_pts_3d_int16.npy", onloaded_stage_1);
    
         </script>
 
