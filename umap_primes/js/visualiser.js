@@ -1,5 +1,10 @@
  // for plasma colouring
 
+ var url = new URL(window.location);
+ var c = url.searchParams.get("npy");
+ npy_fname = c || '1e6_pts_3d_int16.npy'
+ 
+
  var plasma_cmap = interpolateArray(plasma);
  var n = 1000000;
  var colours = new Float32Array(n * 3);
@@ -143,5 +148,5 @@
          onloaded(pt_array, col_array);
      });
  }
-
- NumpyLoader.ajax("1e6_pts_3d_int16.npy", onloaded_stage_1);
+console.log(npy_fname);
+ NumpyLoader.ajax(npy_fname, onloaded_stage_1);
