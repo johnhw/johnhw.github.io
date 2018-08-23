@@ -2,8 +2,9 @@
 
  var url = new URL(window.location);
 
- var npy_fname = url.searchParams.get("npy") || '1e6_pts_3d_int16.npy'
- var color_mode = url.searchParams.get("color") || 'factors'
+ var npy_fname = url.searchParams.get("npy") || '1e6_pts_3d_int16.npy';
+ var color_mode = url.searchParams.get("color") || 'factors';
+ var simple_points = url.searchParams.get("simple") || false;
 
 
  var plasma_cmap = interpolateArray(plasma);
@@ -52,23 +53,48 @@
  // number theory functions
  nt = ntheory;
 
+ var point_texture = new THREE.TextureLoader().load("bokeh.png");
 
- var material = new THREE.PointsMaterial({
-    size: 0.008,
-    sizeAttenuation: true,
-    vertexColors: THREE.VertexColors,
-    opacity: 0.1,
-    transparent: true,
-    //blending:THREE.AdditiveBlending, 
-    depthTest: false
+ /*var material = new THREE.PointsMaterial({
+     size: 0.008,
+     sizeAttenuation: true,
+     vertexColors: THREE.VertexColors,
+     opacity: 0.1,
 
+     transparent: true,
+     //blending:THREE.AdditiveBlending, 
+     depthTest: false
+
+ });
+
+ // add textured points as needed
+ if (!simple_points) material.map = point_texture;
+ */
+
+ vShader = document.getElementById("vertexshader");
+ fShader = document.getElementById("fragmentshader");
+
+var material = new THREE.ShaderMaterial({
+  vertexShader:   vShader.text,
+  fragmentShader: fShader.text,
+  vertexColors: THREE.VertexColors,
+  transparent:true,
+  depthTest:false,
+  blending:THREE.NormalBlending, 
+  uniforms: {
+    opacity: { value: 0.1 },    
+    point: { type: "t", value: point_texture },
+    size : { value: 1.0 },
+    },
 });
 
-function adjust_exposure(alpha)
-{
-    material.opacity = alpha * alpha / 4.0;
-    material.needsUpdate = true;    
-}
+
+
+ function adjust_exposure(alpha) {
+     //material.opacity = alpha * alpha / 4.0;
+     material.uniforms.opacity.value = alpha * alpha / 4.0;
+     material.needsUpdate = true;
+ }
 
  onloaded = function (pt_array, col_array) {
 
@@ -80,17 +106,17 @@ function adjust_exposure(alpha)
 
      renderer.setSize(container.clientWidth, container.clientHeight);
      container.appendChild(renderer.domElement);
-     
+
      // animate loop
      function animate() {
          requestAnimationFrame(animate);
          // only update if focused
          if (container === document.activeElement)
              controls.update(1);
-        if(!controls.clicked)
-            pts.rotateY(0.0015);
+         if (!controls.clicked)
+             pts.rotateY(0.0015);
          renderer.render(scene, camera);
-         
+
      }
 
      var dummy = new THREE.Object3D();
@@ -117,14 +143,14 @@ function adjust_exposure(alpha)
 
 
      var pts = new Float32Array(n * 3);
-     var mean=[0,0,0];
+     var mean = [0, 0, 0];
      for (i = 0; i < n; i++) {
          pts[i * 3] = pt_array.data[i * 3] / 32768.0;
          pts[i * 3 + 1] = pt_array.data[i * 3 + 1] / 32768.0;
          pts[i * 3 + 2] = pt_array.data[i * 3 + 2] / 32768.0;
-         mean[0] += pts[i*3];
-         mean[1] += pts[i*3+1];
-         mean[2] += pts[i*3+2];
+         mean[0] += pts[i * 3];
+         mean[1] += pts[i * 3 + 1];
+         mean[2] += pts[i * 3 + 2];
 
      }
      if (color_mode === "factors") {
@@ -147,10 +173,10 @@ function adjust_exposure(alpha)
      pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));
 
      pt_buffer.attributes.color.needsUpdate = true;
-    
+
      var pts = new THREE.Points(pt_buffer, material);
-     
-     pt_buffer.translate(-mean[0]/n, -mean[1]/n, -mean[2]/n);
+
+     pt_buffer.translate(-mean[0] / n, -mean[1] / n, -mean[2] / n);
      pt_buffer.scale(2, 2, 2);
 
      camera.lookAt(0, 0.0, 0);
