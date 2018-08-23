@@ -94,7 +94,8 @@
                 pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));                
 
                 var material = new THREE.PointsMaterial( { size:0.008, sizeAttenuation: true, vertexColors: THREE.VertexColors, opacity:0.1, transparent:true,
-                    blending:THREE.AdditiveBlending, depthTest:false
+                    //blending:THREE.AdditiveBlending, 
+                    depthTest:false
                 
                 } );
                 var pts = new THREE.Points( pt_buffer,  material );
