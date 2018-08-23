@@ -41,7 +41,7 @@ THREE.FlyControls = function ( object, domElement ) {
 		if(!event.target || !event.target.tagName) return true;
 		var tag = event.target.tagName.toLowerCase();
 		if(tag!=="canvas" && !(tag==='div' && event.target.id==='container'))
-		return true;
+			return true;
 		
 	}
 
@@ -133,12 +133,13 @@ THREE.FlyControls = function ( object, domElement ) {
 
 	this.mousedown = function ( event ) {
 		//blurAll();
+		if(test_tag(event)) return true;
 		if ( this.domElement !== document ) {
 
 			this.domElement.focus();
 
 		}
-		if(test_tag(event)) return true;
+		
 		this.clicked = true;
 
 		
