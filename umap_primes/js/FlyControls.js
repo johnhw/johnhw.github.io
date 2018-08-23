@@ -36,6 +36,14 @@ THREE.FlyControls = function ( object, domElement ) {
 	this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0 };
 	this.moveVector = new THREE.Vector3( 0, 0, 0 );
 	this.rotationVector = new THREE.Vector3( 0, 0, 0 );
+	function test_tag(event)
+	{
+		if(!event.target || !event.target.tagName) return true;
+		var tag = event.target.tagName.toLowerCase();
+		if(tag!=="canvas" && !(tag==='div' && event.target.id==='container'))
+		return true;
+		
+	}
 
 	this.handleEvent = function ( event ) {
 
@@ -49,8 +57,7 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.keydown = function ( event ) {
-		if(event.target.tagName.toLowerCase()==="textarea")
-			return true;
+		if(test_tag(event)) return true;
 
 
 		if ( event.altKey ) {
@@ -58,7 +65,7 @@ THREE.FlyControls = function ( object, domElement ) {
 			return;
 
 		}
-
+		
 		//event.preventDefault();
 
 		switch ( event.keyCode ) {
@@ -91,9 +98,9 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.keyup = function ( event ) {
-		if(event.target.tagName.toLowerCase()==="textarea")
-			return true;
-
+		this.mouseStatus=0;
+		if(test_tag(event)) return true;
+		
 		switch ( event.keyCode ) {
 
 			case 16: /* shift */ this.movementSpeedMultiplier = 1; break;
@@ -131,9 +138,7 @@ THREE.FlyControls = function ( object, domElement ) {
 			this.domElement.focus();
 
 		}
-		if(event.target.tagName.toLowerCase()==="textarea")
-			return false;
-		
+		if(test_tag(event)) return true;
 	
 
 		
@@ -143,7 +148,7 @@ THREE.FlyControls = function ( object, domElement ) {
 
 		if ( this.dragToLook ) {
 
-			this.mouseStatus ++;
+			this.mouseStatus=1;
 
 		} else {
 
@@ -161,8 +166,7 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.mousemove = function ( event ) {
-		if(event.target.tagName.toLowerCase()==="textarea")
-			return false;
+		if(test_tag(event)) return true;
 		
 		if ( ! this.dragToLook || this.mouseStatus > 0 ) {
 
@@ -181,15 +185,14 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.mouseup = function ( event ) {
-		if(event.target.tagName.toLowerCase()==="textarea")
-		return false;
+		if(test_tag(event)) return true;
 	
 		event.preventDefault();
 		event.stopPropagation();
 
 		if ( this.dragToLook ) {
 
-			this.mouseStatus --;
+			this.mouseStatus=0;
 
 			this.moveState.yawLeft = this.moveState.pitchDown = 0;
 
