@@ -29,8 +29,9 @@
         {
           
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-          gl_PointSize = clamp(size/(gl_Position.z+0.01), 0.0, 20.0);
-          f_opacity = opacity;
+          float point_size = size/(gl_Position.w+0.01);
+          gl_PointSize = clamp(point_size, 1.0, 20.0);
+          f_opacity = clamp(point_size, 0.0, 1.0)*opacity;
           f_color = color;
           
         }
@@ -49,6 +50,33 @@
         }
 
     </script>
+
+
+    <script type="x-shader/x-vertex" id="vertexmouseshader">        
+        varying vec3 f_color;
+        uniform float size;
+        attribute vec3 col_index;
+        void main()            
+        {
+          
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+          float point_size = 3.0/(gl_Position.w+0.01);
+          gl_PointSize = clamp(point_size, 1.0, 20.0);          
+          f_color = col_index;          
+        }
+        
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentmouseshader">
+
+        precision highp float;
+        varying vec3 f_color;
+        void main()
+        {
+          gl_FragColor 	= vec4(f_color, 1.0);
+        }
+
+    </script>
     <script  type="text/javascript" src="js/visualiser.js"></script>
 
     <body id="body">
@@ -62,12 +90,16 @@
         <div class="text" id="controls">
            
         <b>W A S D</b> move <b>Q E</b>; roll (a la Elite), <br> <b>R F</b> up/down, <b>mouse drag</b>, move viewport (in an unintuitive way)
+        <br> <b> T </b> toggle tooltip number display
         <br> <a href="index.md.html"> Explanation </a>
         
         
     </div>  
     <div id="tag" class="taglink"> <a href="https://twitter.com/jhnhw"> @jhnhw </a> </div>
-    <div id="container" tabindex="0"> </div>
+    <div id="container" tabindex="0"> 
+            <span class="tooltip" id="number_tooltip">Number</span>
+
+    </div>
 
     <div class="slidecontainer">
         <div class="slide_text"> Exposure </div>

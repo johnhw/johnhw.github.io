@@ -25,7 +25,7 @@ THREE.FlyControls = function ( object, domElement ) {
 	this.tmpQuaternion = new THREE.Quaternion();
 
 	this.mouseStatus = 0;
-
+	this.tooltips = false;
 	this.moveState = { up: 0, down: 0, left: 0, right: 0, forward: 0, back: 0, pitchUp: 0, pitchDown: 0, yawLeft: 0, yawRight: 0, rollLeft: 0, rollRight: 0 };
 	this.moveVector = new THREE.Vector3( 0, 0, 0 );
 	this.rotationVector = new THREE.Vector3( 0, 0, 0 );
@@ -119,6 +119,7 @@ THREE.FlyControls = function ( object, domElement ) {
 			case 81: /*Q*/ this.moveState.rollLeft = 0; break;
 			case 69: /*E*/ this.moveState.rollRight = 0; break;
 
+			case 84: this.tooltips = !this.tooltips;
 		}
 
 		this.updateMovementVector();
@@ -167,15 +168,24 @@ THREE.FlyControls = function ( object, domElement ) {
 
 	this.mousemove = function ( event ) {
 		if(test_tag(event)) return true;
-		
+		var container = this.getContainerDimensions();
+		var halfWidth = container.size[ 0 ] / 2;
+		var halfHeight = container.size[ 1 ] / 2;
+		var rect = event.target.getBoundingClientRect();
+
+		this.mouseRenderX = event.clientX - rect.left; //x position within the element.
+		this.mouseRenderY = rect.bottom - event.clientY;  //y position within the element.
+		  
+		this.mousePageX = event.pageX + 'px';
+        this.mousePageY = event.pageY + 'px';
+
 		if ( ! this.dragToLook || this.mouseStatus > 0 ) {
 
-			var container = this.getContainerDimensions();
-			var halfWidth = container.size[ 0 ] / 2;
-			var halfHeight = container.size[ 1 ] / 2;
-
+		
 			this.moveState.yawLeft = - ( ( event.pageX - container.offset[ 0 ] ) - halfWidth ) / halfWidth;
 			this.moveState.pitchDown = ( ( event.pageY - container.offset[ 1 ] ) - halfHeight ) / halfHeight;
+
+
 
 			this.updateRotationVector();
 

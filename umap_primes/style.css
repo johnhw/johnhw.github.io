@@ -186,3 +186,24 @@ input[type=range]::-webkit-slider-runnable-track {
     background: #222222;    
     
   }
+
+
+
+  #container:hover .tooltip {
+    display: block;
+    }
+    
+    .tooltip {
+        display: none;
+        background: #333333;    
+        padding: 10px;
+        opacity: 0.5;
+        position: absolute;
+        border: 1px solid white;
+        z-index: 1000;        
+        height:1em;
+        font-size: 10pt;
+        font-family: 'Comfortaa', serif;    
+        color:#ffffff;
+
+    }

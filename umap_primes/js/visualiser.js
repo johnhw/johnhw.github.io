@@ -6,16 +6,25 @@
  var color_mode = url.searchParams.get("color") || 'factors';
  var simple_points = url.searchParams.get("simple") || false;
 
- function test()
- {
-     alert("test");
- }
+
 
  var plasma_cmap = interpolateArray(plasma);
  var n = 1000000;
  var colours = new Float32Array(n * 3);
  var col_data = null;
  var pt_buffer = new THREE.BufferGeometry();
+ var index_pt_buffer = new THREE.BufferGeometry();
+
+ // create colours to use as lookup indices
+ var index_colors = new Float32Array(n * 3);
+ for(var k=0;k<n;k++)
+ {     
+    var i = k;
+    index_colors[k*3] = ((i>>16)&0xff)/255.0;
+    index_colors[k*3+1] = ((i>>8)&0xff)/255.0;
+    index_colors[k*3+2] = ((i>>0)&0xff)/255.0;
+
+ }
 
  function filter_points() {
      element = document.getElementById("predicate_text");
@@ -24,7 +33,7 @@
 
      // check if we are filtering, simple colouring, or full colouring
      var test_result = _pred(5);
-     console.log("_______________");
+     
      if (typeof (test_result) == "boolean") {
          for (i = 0; i < n; i++) {
              if (_pred(i)) {
@@ -60,21 +69,7 @@
 
  var point_texture = new THREE.TextureLoader().load("point.png");
 
- /*var material = new THREE.PointsMaterial({
-     size: 0.008,
-     sizeAttenuation: true,
-     vertexColors: THREE.VertexColors,
-     opacity: 0.1,
 
-     transparent: true,
-     //blending:THREE.AdditiveBlending, 
-     depthTest: false
-
- });
-
- // add textured points as needed
- if (!simple_points) material.map = point_texture;
- */
 
  vShader = document.getElementById("vertexshader");
  fShader = document.getElementById("fragmentshader");
@@ -93,10 +88,25 @@ var material = new THREE.ShaderMaterial({
     },
 });
 
+vMouseShader = document.getElementById("vertexmouseshader");
+fMouseShader = document.getElementById("fragmentmouseshader");
+
+var index_material = new THREE.ShaderMaterial({
+    vertexShader:   vMouseShader.text,
+    fragmentShader: fMouseShader.text,
+    vertexColors: THREE.VertexColors,
+    transparent:false,
+    depthTest:true,
+    blending:THREE.NoBlending, 
+    uniforms: {            
+      size : { value: 1.0 },
+      },
+  });
 
 
- function adjust_exposure(alpha) {
-     //material.opacity = alpha * alpha / 4.0;
+
+
+ function adjust_exposure(alpha) {     
      material.uniforms.opacity.value = alpha * alpha / 4.0;
      material.needsUpdate = true;
  }
@@ -108,19 +118,48 @@ var material = new THREE.ShaderMaterial({
      var camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
      col_data = col_array.data; // expose the col array
      var renderer = new THREE.WebGLRenderer();
-
+     var bufferTexture = new THREE.WebGLRenderTarget(container.clientWidth,  container.clientHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
+ 
+     var pts, index_buffer_pts;
      renderer.setSize(container.clientWidth, container.clientHeight);
      container.appendChild(renderer.domElement);
+     var tooltip = document.getElementById("number_tooltip");
 
      // animate loop
      function animate() {
+        var read = new Uint8Array(4);
+        pts.visible=false;
+        index_buffer_pts.visible=true;
+        renderer.render(scene, camera, bufferTexture);
+        renderer.readRenderTargetPixels( bufferTexture, controls.mouseRenderX, controls.mouseRenderY, 1, 1, read );
+        // convert color back into integer index        
+        var index = ((read[0]<<16) + (read[1]<<8) + (read[2]));
+        
+        if(index!==0 && controls.tooltips)
+        {                    
+            tooltip.style.left = controls.mousePageX;
+            tooltip.style.top = controls.mousePageY;
+            tooltip.style.display = 'block';
+            tooltip.innerHTML = index;
+        }
+        else
+        {
+            tooltip.style.display = 'none';
+        }
+
          requestAnimationFrame(animate);
          // only update if focused
          if (container === document.activeElement)
              controls.update(1);
          if (!controls.clicked)
+         {
              pts.rotateY(0.0015);
-         renderer.render(scene, camera);
+             index_buffer_pts.rotateY(0.0015);
+         }
+
+        pts.visible=true;
+        index_buffer_pts.visible=false;
+        renderer.render(scene, camera);
 
      }
 
@@ -176,16 +215,19 @@ var material = new THREE.ShaderMaterial({
 
      pt_buffer.addAttribute('position', new THREE.BufferAttribute(pts, 3));
      pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));
-
+     pt_buffer.addAttribute('col_index', new THREE.Float32BufferAttribute(index_colors, 3));
+     
      pt_buffer.attributes.color.needsUpdate = true;
-
-     var pts = new THREE.Points(pt_buffer, material);
-
+    
      pt_buffer.translate(-mean[0] / n, -mean[1] / n, -mean[2] / n);
      pt_buffer.scale(2, 2, 2);
 
+     pts = new THREE.Points(pt_buffer, material);     
+     index_buffer_pts = new THREE.Points(pt_buffer, index_material);     
+
      camera.lookAt(0, 0.0, 0);
      scene.add(pts);
+     scene.add(index_buffer_pts);
 
      var three_div = document.createElement('div');
      three_div.className = 'text';

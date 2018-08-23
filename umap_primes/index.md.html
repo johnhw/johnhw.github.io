@@ -135,7 +135,10 @@ reran the algorithm. The result is this:
 ![A random control; layout of random points with same density and dimension. Brightness artificially boosted to make
 results clearer.](primes_umap_random_crop.png)
 
-The same plasma colour map is used as in the first plot. The result **isn't** just random noise, so there clearly is some artifacting going on. I am 
+The same plasma colour map is used as in the first plot. The result **isn't** just random noise, so there clearly is some artifacting going on (or it could also 
+be artifacts of NumPy's random number generator, but I think that's unlikely to give the structure we see). 
+
+I am 
 not sure what the blobby clusters represent, but they are possibly related to the count of 1s in each vector. Note, however, that the colouring
 is random and diffuse, and there are no loop structures or hierarchical clusters. These seem to be a function of the data chosen.
 
