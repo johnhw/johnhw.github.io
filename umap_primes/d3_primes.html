@@ -1,0 +1,139 @@
+<meta charset="utf-8">
+<!DOCTYPE html>
+    <html>
+      <head>
+        <title>The d3 test</title>
+<style>
+.chart {
+
+}
+
+.main text {
+    font: 10px sans-serif;	
+}
+
+.axis line, .axis path {
+    shape-rendering: crispEdges;
+    stroke: black;
+    fill: none;
+}
+
+circle {
+    fill: steelblue;
+}
+
+</style>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script type="text/javascript" src="npy.js"></script>
+
+      </head>
+      <body>
+        <div class='content'>
+          <!-- /the chart goes here -->
+        </div>
+        <script>
+
+        
+
+        onloaded = function(array)
+        {
+            var data_x = array.data.filter(function(value, index, Arr){return index<10000 && index%2===0;});
+            var data_y = array.data.filter(function(value, index, Arr){return index<10000 && index%2===1;});
+                        
+            var data = [];
+            for(i=0;i<data_x.length;i++)
+            {
+                data[i] = [data_x[i], data_y[i]];
+            }
+
+            
+            
+            var margin = {top: 20, right: 15, bottom: 60, left: 60}
+                , width = 960 - margin.left - margin.right
+                , height = 500 - margin.top - margin.bottom;
+            
+            var x_scale = d3.scaleLinear()
+                        .domain([d3.min(data_x), d3.max(data_x)])
+                        .range([ 0, width ]);
+            
+            var y_scale = d3.scaleLinear()
+                        .domain([d3.min(data_y), d3.max(data_y)])
+                        .range([ height, 0 ]);
+            
+            const zoom = d3.zoom()
+                .scaleExtent([1/4, 9])
+                .on('zoom', function () {
+                    d3.select('g').attr('transform', d3.event.transform)
+                });
+
+
+            var chart = d3.select('body')
+            .append('svg:svg')
+            .attr('width', width + margin.right + margin.left)
+            .attr('height', height + margin.top + margin.bottom)
+            .attr('class', 'chart')
+            .call(zoom);
+
+            var main = chart.append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('class', 'main')   
+                
+          
+
+            var g = main.append("svg:g"); 
+            
+            g.selectAll("scatter-dots")
+                .data(data)
+                .enter().append("svg:circle")
+                    .attr("cx", function (d,i) { return x_scale(d[0]); } )
+                    .attr("cy", function (d) { return y_scale(d[1]); } )
+                    .attr("r", 1)
+                    .style("fill", '#28f')                    
+                    .on("mouseover", handleMouseOver)
+                    .on("mouseout", handleMouseOut);
+            // From: http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
+
+             // Create Event Handlers for mouse
+                function handleMouseOver(d, i) {  // Add interactivity
+
+                        // Use D3 to select element, change color and size
+                        d3.select(this).attr({
+                                fill: "#ff0",                                
+                                r: 10
+                                });
+                        
+                        // Specify where to put label of text
+                        g.append("text")
+                       
+                        .attr("x", function() { return x_scale(d[0]) - 10; } )
+                        .attr("y",function() { return y_scale(d[1]) - 15; })
+                        .attr("id","t" + d.x + "-" + d.y + "-" + i)                            
+                        .text(function() {
+                            return i;  // Value of the text
+                        })
+                        ;
+            }
+
+            function handleMouseOut(d, i) {
+            // Use D3 to select element, change color back to normal
+                    d3.select(this).attr({
+                    fill: "black",
+                    r: 1
+                    });
+
+                    // Select text by id and then remove
+                    d3.select("#t" + d.x + "-" + d.y + "-" + i).remove();  // Remove text location
+                    }
+
+
+     
+
+        }
+        NumpyLoader.ajax("1e6_pts.npy", onloaded);
+   
+        
+        </script>
+      </body>
+    </html>
