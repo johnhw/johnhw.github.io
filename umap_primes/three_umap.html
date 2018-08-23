@@ -28,11 +28,22 @@
         void main()            
         {
           
+
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
           float point_size = size/(gl_Position.w+0.01);
-          gl_PointSize = clamp(point_size, 1.0, 20.0);
-          f_opacity = clamp(point_size, 0.0, 1.0)*opacity;
-          f_color = color;
+          if(color.r==0.0 && color.g==0.0 && color.b==0.0)
+          {
+            point_size = 1.0;
+            f_opacity = 0.1;
+            f_color = vec3(0.1, 0.1, 0.1);
+          }
+          else 
+          {
+            gl_PointSize = clamp(point_size, 1.0, 20.0);
+            f_opacity = clamp(point_size, 0.0, 1.0)*opacity;
+            f_color = color;
+          }
+          
           
         }
         
@@ -60,7 +71,7 @@
         {
           
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-          float point_size = 3.0/(gl_Position.w+0.01);
+          float point_size = 10.0/(gl_Position.w+0.01);
           gl_PointSize = clamp(point_size, 1.0, 20.0);          
           f_color = col_index;          
         }
@@ -108,10 +119,12 @@
     <div class="text" id="predicate">
         Filter by predicate (JavaScript) on the index <code>i</code>. For example <code>i%2==0</code> selects even points. <code>true</code> selects all points again.
         <br> <a href="https://github.com/rsandor/number-theory"> number-theory </a> functions are available as <code>nt.xxx</code> (e.g. <code>nt.gcd(i,9)==3</code>)
+        <br> The array variables <code>primes</code> and <code>composites</code> are built in, and list all primes/composites &lt; 1000000.
         <ul>
         <li> If the predicate returns true/false, binary filtering is applied <code>i%2==0</code>
         <li> If the predicate returns a float, the result will be used to colour the points, mapping 0.0->1.0 to the plasma colormap <code>i/1000000.0</code>
         <li> If the predicate returns an array of 3 floats, the result will be used to colour the points as raw RGB <code>[i/1000000.0, i%2/2.0, i%5/5.0]</code>
+        <li> If the predicate returns an array of more than 3 floats, these are treated as specific indices to highlight <code>[11,23,55,67,81]</code>
         </ul>
         <br>
             <textarea rows="2" cols="80" id="predicate_text"> true

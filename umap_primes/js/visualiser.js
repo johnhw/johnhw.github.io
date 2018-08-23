@@ -7,7 +7,7 @@
  var simple_points = url.searchParams.get("simple") || false;
 
 
-
+ var primes; // Int32 array of primes
  var plasma_cmap = interpolateArray(plasma);
  var n = 1000000;
  var colours = new Float32Array(n * 3);
@@ -25,7 +25,7 @@
     index_colors[k*3+2] = ((i>>0)&0xff)/255.0;
 
  }
-
+ var n_selected = n;
  function filter_points() {
      element = document.getElementById("predicate_text");
      code = "var _pred = function(i) { return " + element.value + ";}";
@@ -35,18 +35,21 @@
      var test_result = _pred(5);
      
      if (typeof (test_result) == "boolean") {
+         n_selected = 0;
          for (i = 0; i < n; i++) {
              if (_pred(i)) {
+                 n_selected += 1;
                  colours[i * 3] = col_data[i * 3] / 255.0;
                  colours[i * 3 + 1] = col_data[i * 3 + 1] / 255.0;
                  colours[i * 3 + 2] = col_data[i * 3 + 2] / 255.0;
              } else {
-                 colours[i * 3] = 0.1;
-                 colours[i * 3 + 1] = 0.1;
-                 colours[i * 3 + 2] = 0.1;
+                 colours[i * 3] = 0.0;
+                 colours[i * 3 + 1] = 0.0;
+                 colours[i * 3 + 2] = 0.0;
              }
          }
      } else if (typeof (test_result) == "number") {
+         n_selected = n;
          for (i = 0; i < n; i++) {
              var rgb = plasma_cmap(_pred(i));
              colours[i * 3] = rgb.r;
@@ -54,12 +57,31 @@
              colours[i * 3 + 2] = rgb.b;
          }
      } else if (test_result.length === 3) {
+        n_selected = n;
          for (i = 0; i < n; i++) {
              var rgb = _pred(i);
              colours[i * 3] = rgb[0];
              colours[i * 3 + 1] = rgb[1];
              colours[i * 3 + 2] = rgb[2];
          }
+     }
+     else if(test_result.length>3)
+     {
+        n_selected = test_result.length;
+         // allow an explicit list of indices to highlight
+        for (i = 0; i < n; i++) {
+            
+            colours[i * 3] = 0.0;
+            colours[i * 3 + 1] = 0.0;
+            colours[i * 3 + 2] = 0.0;
+        }
+        for(k=0;k<test_result.length;k++)
+        {
+            var i = test_result[k];
+            colours[i * 3] = col_data[i * 3] / 255.0;
+            colours[i * 3 + 1] = col_data[i * 3 + 1] / 255.0;
+            colours[i * 3 + 2] = col_data[i * 3 + 2] / 255.0;
+        }
      }
 
      pt_buffer.attributes.color.needsUpdate = true;
@@ -134,7 +156,7 @@ var index_material = new THREE.ShaderMaterial({
         renderer.readRenderTargetPixels( bufferTexture, controls.mouseRenderX, controls.mouseRenderY, 1, 1, read );
         // convert color back into integer index        
         var index = ((read[0]<<16) + (read[1]<<8) + (read[2]));
-        
+        material.uniforms.size.value = (n/(n_selected+1));
         if(index!==0 && controls.tooltips)
         {                    
             tooltip.style.left = (controls.mousePageX-100) + "px";
@@ -244,5 +266,28 @@ var index_material = new THREE.ShaderMaterial({
          onloaded(pt_array, col_array);
      });
  }
- console.log(npy_fname);
- NumpyLoader.ajax(npy_fname, onloaded_stage_1);
+ 
+NumpyLoader.ajax(npy_fname, onloaded_stage_1);
+
+
+
+function set_primes(array)
+{
+    primes = array.data;    
+    composites = new Float32Array(n-primes.length);
+    var ix = 0;
+    var prime_ix = 0;
+    for(i=2;i<n;i++)
+    {
+        if(i===primes[prime_ix])
+        {
+            prime_ix ++;
+        }
+        else
+        {
+            composites[ix++] = i;
+        }
+    }    
+}
+
+NumpyLoader.ajax("primes_1e6_uint32.npy", set_primes);
