@@ -66,8 +66,8 @@
             {
               
               gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-              gl_PointSize = max(1.0, min(140.0, size*5.0*(gl_Position.z+0.1)));
-              f_opacity = opacity / (1.0+(gl_Position.z*gl_Position.z));
+              gl_PointSize = clamp(size/(gl_Position.z+0.01), 1.0, 20.0);
+              f_opacity = opacity;
               f_color = color;
               
             }
@@ -82,7 +82,6 @@
             uniform sampler2D point;
             void main()
             {
-
               gl_FragColor 	= vec4(f_color, f_opacity * texture2D(point, gl_PointCoord));
             }
 

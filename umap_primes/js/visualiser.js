@@ -53,7 +53,7 @@
  // number theory functions
  nt = ntheory;
 
- var point_texture = new THREE.TextureLoader().load("bokeh.png");
+ var point_texture = new THREE.TextureLoader().load("point.png");
 
  /*var material = new THREE.PointsMaterial({
      size: 0.008,
