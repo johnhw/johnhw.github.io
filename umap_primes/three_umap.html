@@ -15,6 +15,9 @@
                 
     </head>
     <body id="body">
+
+            
+
         <div class="heading">
             One million integers            
         </div>  
@@ -23,26 +26,66 @@
            
         <b>W A S D</b> move <b>Q E</b>; roll (a la Elite), <br> <b>R F</b> up/down, <b>mouse drag</b>, move viewport (in an unintuitive way)
         <br> <a href="index.md.html"> Explanation </a>
+        
+        
     </div>  
     <div id="tag" class="taglink"> <a href="https://twitter.com/jhnhw"> @jhnhw </a> </div>
+    <div id="container"> </div>
+
+    <div class="text" id="predicate">
+        Filter by predicate (JavaScript) on the index `i`. For example `i%2==0` selects even points. `true` selects all points again.
+        <br>
+            <textarea rows="2" cols="80" id="predicate_text"> true
+                    </textarea> <button id="predicate_button" onclick="filter_points()"> Filter </button>
+                    
+    </div>
+   
         <script src="js/three.min.js"></script>
         <script src="color_scale/plasma.json"></script>
         <script src="color_scale/interpolate.js"></script>
-        <script src="https://threejs.org/examples/js/controls/FlyControls.js"></script>
+        <script src="js/FlyControls.js"></script>
         <script type="text/javascript" src="npy.js"></script>
         <script>
            // for plasma colouring
            var plasma_cmap = interpolateArray(plasma);
+           var n = 1000000;
+           var colours = new Float32Array(n*3);
+           var col_data = null;
+           var pt_buffer = new THREE.BufferGeometry();
+           function filter_points()
+           {
+               element = document.getElementById("predicate_text");
+               code = "var _pred = function(i) { return " + element.value + ";}";
+               eval(code);            
+               for(i=0;i<n;i++)
+               {
+                 if(_pred(i))
+                 {
+                    colours[i*3] = col_data[i*3]/255.0;
+                    colours[i*3+1] = col_data[i*3+1]/255.0;
+                    colours[i*3+2] = col_data[i*3+2]/255.0;         
+                 }
+                 else
+                 {
+                    colours[i*3] = 0;
+                    colours[i*3+1] = 0;
+                    colours[i*3+2] = 0;
+                 }                            
+               }
+               pt_buffer.attributes.color.needsUpdate = true;
+           }
             
             onloaded = function(pt_array, col_array)
             {
   
                 var scene = new THREE.Scene();
-                var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
+                var container = document.getElementById("container");
+                var camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.1, 1000 );
+                col_data = col_array.data; // expose the col array
                 var renderer = new THREE.WebGLRenderer();
-                renderer.setSize( window.innerWidth, window.innerHeight );
-                document.body.appendChild( renderer.domElement );
+                
+                renderer.setSize( container.clientWidth, container.clientHeight );
+                container.appendChild( renderer.domElement );
 
                 // animate loop
                 function animate() {
@@ -56,7 +99,7 @@
 
                  //camera control properties
                  controls.movementSpeed = 0.015;
-                 controls.domElement = window.document;
+                 controls.domElement = container;//window.document;
                  controls.rollSpeed = 0.01;
                 
                  controls.autoForward = false;
@@ -67,12 +110,12 @@
 
                  camera.position.z = 5;
                 
-                 var n = 1000000;
+                 
 
                  // Create the geometry, and set the attribute arrays
-                 var pt_buffer = new THREE.BufferGeometry();
+                 
                 
-                 var colours = new Float32Array(n*3);
+                 
                  var pts = new Float32Array(n*3);
                 for(i=0;i<n;i++)
                 {
@@ -92,7 +135,8 @@
                 
                 pt_buffer.addAttribute('position', new THREE.BufferAttribute(pts, 3));                
                 pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));                
-
+                
+                pt_buffer.attributes.color.needsUpdate = true;
                 var material = new THREE.PointsMaterial( { size:0.008, sizeAttenuation: true, vertexColors: THREE.VertexColors, opacity:0.1, transparent:true,
                     //blending:THREE.AdditiveBlending, 
                     depthTest:false
