@@ -52,6 +52,24 @@
  // number theory functions
  nt = ntheory;
 
+
+ var material = new THREE.PointsMaterial({
+    size: 0.008,
+    sizeAttenuation: true,
+    vertexColors: THREE.VertexColors,
+    opacity: 0.1,
+    transparent: true,
+    //blending:THREE.AdditiveBlending, 
+    depthTest: false
+
+});
+
+function adjust_exposure(alpha)
+{
+    material.opacity = alpha * alpha / 4.0;
+    material.needsUpdate = true;    
+}
+
  onloaded = function (pt_array, col_array) {
 
      var scene = new THREE.Scene();
@@ -128,16 +146,7 @@
      pt_buffer.addAttribute('color', new THREE.BufferAttribute(colours, 3));
 
      pt_buffer.attributes.color.needsUpdate = true;
-     var material = new THREE.PointsMaterial({
-         size: 0.008,
-         sizeAttenuation: true,
-         vertexColors: THREE.VertexColors,
-         opacity: 0.1,
-         transparent: true,
-         //blending:THREE.AdditiveBlending, 
-         depthTest: false
-
-     });
+    
      var pts = new THREE.Points(pt_buffer, material);
      
      pt_buffer.translate(-mean[0]/n, -mean[1]/n, -mean[2]/n);

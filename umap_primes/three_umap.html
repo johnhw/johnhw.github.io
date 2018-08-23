@@ -33,6 +33,9 @@
     <div id="tag" class="taglink"> <a href="https://twitter.com/jhnhw"> @jhnhw </a> </div>
     <div id="container" tabindex="0"> </div>
 
+    <div class="slidecontainer">
+            <input type="range" min="1" max="100" value="20" step="1" class="slider" id="exposure_slider" onchange="adjust_exposure(this.value/100.0)">
+    </div>
     <div class="text" id="predicate">
         Filter by predicate (JavaScript) on the index <code>i</code>. For example <code>i%2==0</code> selects even points. <code>true</code> selects all points again.
         <br> <a href="https://github.com/rsandor/number-theory"> number-theory </a> functions are available as <code>nt.xxx</code> (e.g. <code>nt.gcd(i,9)==3</code>)
@@ -43,7 +46,7 @@
         </ul>
         <br>
             <textarea rows="2" cols="80" id="predicate_text"> true
-                    </textarea> <button id="predicate_button" onclick="filter_points()"> Filter </button>
+                    </textarea> <button id="predicate_button" oninput="filter_points()"> Filter </button>
                     
     </div>
    
