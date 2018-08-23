@@ -27,6 +27,13 @@ for a total of 1000 frames.
 
 <iframe width="726" height="408" src="https://www.youtube.com/embed/nCk8dyU7zUM" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
+
+
+## 3D view
+
+There is a WebGL live in-browser [3D viewer here](https://johnhw.github.io/umap_primes/three_umap.html). The algorithm was run again compressing into a 3D space, instead of 2D. 
+Much of the structure remains stable, which is very pleasing.  This plot uses the "false colouring" to colour the points, as explained in below.
+
 ## Representation
 Each integer is represented
 as a vector, one element for each possible prime factor, where 0=prime factor not present, 1=prime factor present. This provides a simple geometry for the
@@ -38,11 +45,6 @@ These high-dimensional vectors are then squashed down
 from thousands of dimensions for each number to just two dimensions, and a point plotted at that coordinate. The points are coloured according to 
 the original integer index; brighter colours correspond to larger numbers. The points are laid out so that numbers with similar "angles" to each other are close together. For example, all primes are at 90 degrees to each other, and all powers of a number are identical to each other (0 degree angle).
 
-
-### 3D view
-
-There is a WebGL in-browser [3D viewer here](https://johnhw.github.io/umap_primes/three_umap.html). The algorithm was run again compressing into a 3D space, instead of 2D. 
-Much of the structure remains stable, which is very pleasing.  This plot uses the "false colouring" to colour the points, as explained in below.
 
 ### Algorithm
 * for each `i` up to `n`
