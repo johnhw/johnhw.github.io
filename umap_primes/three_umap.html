@@ -14,7 +14,43 @@
          
                 
     </head>
-    
+    <script src="js/three.min.js"></script>
+    <script src="js/numbertheory.js"></script>
+    <script src="color_scale/plasma.json"></script>
+    <script src="color_scale/interpolate.js"></script>
+    <script src="js/FlyControls.js"></script>
+    <script type="text/javascript" src="npy.js"></script>
+    <script type="x-shader/x-vertex" id="vertexshader">
+        varying vec3 f_color;
+        uniform float size;
+        varying float f_opacity;
+        uniform float opacity;
+        void main()            
+        {
+          
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+          gl_PointSize = clamp(size/(gl_Position.z+0.01), 0.0, 20.0);
+          f_opacity = opacity;
+          f_color = color;
+          
+        }
+        
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentshader">
+
+        precision highp float;
+        varying vec3 f_color;
+        varying float f_opacity;
+        uniform sampler2D point;
+        void main()
+        {
+          gl_FragColor 	= vec4(f_color, f_opacity * texture2D(point, gl_PointCoord));
+        }
+
+    </script>
+    <script  type="text/javascript" src="js/visualiser.js"></script>
+
     <body id="body">
 
             
@@ -47,47 +83,13 @@
         </ul>
         <br>
             <textarea rows="2" cols="80" id="predicate_text"> true
-                    </textarea> <button id="predicate_button" oninput="filter_points()"> Filter </button>
+                    </textarea> 
+                    
+                    <button id="predicate_button" onclick="filter_points()"> Filter </button>
                     
     </div>
    
-        <script src="js/three.min.js"></script>
-        <script src="js/numbertheory.js"></script>
-        <script src="color_scale/plasma.json"></script>
-        <script src="color_scale/interpolate.js"></script>
-        <script src="js/FlyControls.js"></script>
-        <script type="text/javascript" src="npy.js"></script>
-        <script type="x-shader/x-vertex" id="vertexshader">
-            varying vec3 f_color;
-            uniform float size;
-            varying float f_opacity;
-            uniform float opacity;
-            void main()            
-            {
-              
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-              gl_PointSize = clamp(size/(gl_Position.z+0.01), 1.0, 20.0);
-              f_opacity = opacity;
-              f_color = color;
-              
-            }
-            
-        </script>
-
-        <script type="x-shader/x-fragment" id="fragmentshader">
-
-            precision highp float;
-            varying vec3 f_color;
-            varying float f_opacity;
-            uniform sampler2D point;
-            void main()
-            {
-              gl_FragColor 	= vec4(f_color, f_opacity * texture2D(point, gl_PointCoord));
-            }
-
-        </script>
-        <script  type="text/javascript" src="js/visualiser.js"></script>
-
+      
         
 	</body>
 </html>

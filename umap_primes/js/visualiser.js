@@ -6,6 +6,10 @@
  var color_mode = url.searchParams.get("color") || 'factors';
  var simple_points = url.searchParams.get("simple") || false;
 
+ function test()
+ {
+     alert("test");
+ }
 
  var plasma_cmap = interpolateArray(plasma);
  var n = 1000000;
@@ -20,6 +24,7 @@
 
      // check if we are filtering, simple colouring, or full colouring
      var test_result = _pred(5);
+     console.log("_______________");
      if (typeof (test_result) == "boolean") {
          for (i = 0; i < n; i++) {
              if (_pred(i)) {
