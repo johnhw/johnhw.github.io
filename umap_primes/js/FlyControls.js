@@ -132,10 +132,9 @@ THREE.FlyControls = function ( object, domElement ) {
 	};
 
 	this.mousedown = function ( event ) {
-		//blurAll();
 		
 		
-		if ( event.target==this.domElement) {
+		if (event.target==this.domElement) {
 
 			this.container.focus();
 
