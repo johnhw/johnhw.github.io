@@ -12,14 +12,33 @@ body
     padding-right: 1em;
     font-size: 20pt;
     font-family: 'Comfortaa', serif;
+    color: #ffffff;
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    text-align: center;
+    z-index: 100;
+    display:block;
+
 }
 
-.controls
+.text
 {
     padding-top: 1em;
     padding-left: 10px;
     padding-bottom: 2em;
     padding-right: 1em;
+    font-size: 10pt;
     font-family: 'Comfortaa', serif;
 
+}
+
+#controls 
+{
+    position: absolute;
+    top: 80px;
+    width: 100%;
+    text-align: left;
+    z-index: 100;
+    display:block;
 }

@@ -14,15 +14,15 @@
          
                 
     </head>
-    
+    <body id="body">
         <div class="heading">
             One million integers            
         </div>  
     
-        <div class="controls">
+        <div class="text" id="controls">
            
-        Controls: W,A,S,D; move, Q,E; roll (a la Elite), R/F up/down, mouse drag, move viewport (in an unintuitive way)
-        <br> <a href="index.md.html"> Explanation of what you are seeing
+        <b>W,A,S,D</b>; move, <b>Q,E</b>; roll (a la Elite), <b>R/F</b> up/down, <b>mouse drag</b>, move viewport (in an unintuitive way)
+        <br> <a href="index.md.html"> Explanation </a>
     </div>  
 
         <script src="js/three.min.js"></script>
@@ -36,7 +36,7 @@
             
             onloaded = function(pt_array, col_array)
             {
-
+  
                 var scene = new THREE.Scene();
                 var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
@@ -97,6 +97,11 @@
                 pt_buffer.scale(0.2, 0.2, 0.2);
 
                 scene.add(pts);
+
+                var three_div = document.createElement('div');
+                three_div.className = 'text';
+                three_div.innerHTML = "<br>Powered by <a href=\"https://threejs.org/\"> three.js </a>";
+                document.body.appendChild(three_div); 
                 animate();
             }
 
