@@ -31,11 +31,7 @@ THREE.FlyControls = function ( object, domElement ) {
 	this.rotationVector = new THREE.Vector3( 0, 0, 0 );
 	function test_tag(event)
 	{
-		/*if(!event.target || !event.target.tagName) return true;
-		var tag = event.target.tagName.toLowerCase();
-		if(tag!=="canvas" && !(tag==='div' && event.target.id==='container'))
-			return true;
-			*/
+	
 		if(document.activeElement!==this.container)
 			return true;
 				
@@ -176,8 +172,8 @@ THREE.FlyControls = function ( object, domElement ) {
 		this.mouseRenderX = event.clientX - rect.left; //x position within the element.
 		this.mouseRenderY = rect.bottom - event.clientY;  //y position within the element.
 		  
-		this.mousePageX = event.pageX + 'px';
-        this.mousePageY = event.pageY + 'px';
+		this.mousePageX = event.pageX;
+        this.mousePageY = event.pageY;
 
 		if ( ! this.dragToLook || this.mouseStatus > 0 ) {
 

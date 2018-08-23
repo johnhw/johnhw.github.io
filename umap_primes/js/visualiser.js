@@ -137,8 +137,8 @@ var index_material = new THREE.ShaderMaterial({
         
         if(index!==0 && controls.tooltips)
         {                    
-            tooltip.style.left = controls.mousePageX;
-            tooltip.style.top = controls.mousePageY;
+            tooltip.style.left = (controls.mousePageX-100) + "px";
+            tooltip.style.top = (controls.mousePageY-20) + "px";
             tooltip.style.display = 'block';
             tooltip.innerHTML = index;
         }
