@@ -133,13 +133,14 @@ THREE.FlyControls = function ( object, domElement ) {
 
 	this.mousedown = function ( event ) {
 		//blurAll();
-		if(test_tag(event)) return true;
-		if ( this.domElement !== document ) {
+		
+		
+		if ( event.target==this.domElement) {
 
-			this.domElement.focus();
+			this.container.focus();
 
 		}
-		
+		if(test_tag(event)) return true;
 		this.clicked = true;
 
 		

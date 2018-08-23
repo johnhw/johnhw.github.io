@@ -98,7 +98,8 @@ function adjust_exposure(alpha)
 
      //camera control properties
      controls.movementSpeed = 0.015;
-     controls.domElement = container; //window.document;
+     controls.domElement = renderer.domElement; //window.document;
+     controls.container = container;
      controls.rollSpeed = 0.01;
 
      controls.autoForward = false;
