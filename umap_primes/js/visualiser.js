@@ -89,7 +89,7 @@
  // number theory functions
  nt = ntheory;
 
- var point_texture = new THREE.TextureLoader().load("point.png");
+ var point_texture = new THREE.TextureLoader().load("imgs/point.png");
 
 
 
@@ -306,12 +306,12 @@ var index_material = new THREE.ShaderMaterial({
  function onloaded_stage_1(pt_array) {
 
 
-     NumpyLoader.ajax("1e6_pts_rgb.npy", function (col_array) {
+     NumpyLoader.ajax("data/1e6_pts_rgb.npy", function (col_array) {
          onloaded(pt_array, col_array);
      });
  }
  
-NumpyLoader.ajax(npy_fname, onloaded_stage_1);
+NumpyLoader.ajax("data/"+npy_fname, onloaded_stage_1);
 
 
 
@@ -334,4 +334,4 @@ function set_primes(array)
     }    
 }
 
-NumpyLoader.ajax("primes_1e6_uint32.npy", set_primes);
+NumpyLoader.ajax("data/primes_1e6_uint32.npy", set_primes);

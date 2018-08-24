@@ -2,15 +2,14 @@
 <!-- Markdeep: -->
 
 .<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script>
-window.markdeepOptions = {tocStyle:'none'};</script><script src="markdeep.min.js">
-</script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script>
+window.markdeepOptions = {tocStyle:'none'};</script><script src="js/markdeep.min.js"></script>
 <script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible");
 
 </script>
 
 
 # What do numbers look like?
-![One million integers embedded into 2D space with UMAP](primes_umap_1e6_contrast_enhanced.png)
+![One million integers embedded into 2D space with UMAP](imgs/primes_umap_1e6_contrast_enhanced.png)
 
 This is the first million integers, represented as binary vectors indicating their prime factors, and laid out using the [UMAP dimensionality reduction algorithm](https://github.com/lmcinnes/umap) by Leland McInnes. 
 Each integer is represented in a high-dimensional space, and gets squished down to 2D so that numbers with similar prime factorisations are closer
@@ -19,7 +18,7 @@ together than those with dissimilar factorisations.
 A very pretty structure emerges; this might be spurious in that it captures
 more about the layout algorithm than any *"true"* structure of numbers. However, the visual effect is very appealling and requires no tricky manipulation to create.
 
-[Large 4k version of the image suitable for backgrounds](primes_umap_1e6_4k.png)
+[Large 4k version of the image suitable for backgrounds](imgs/primes_umap_1e6_4k.png)
 
 ## Video
 A short video, showing the numbers being added in sequence. Each frame adds 1000 integers,
@@ -34,7 +33,7 @@ for a total of 1000 frames.
 There is a WebGL live in-browser [3D viewer here](https://johnhw.github.io/umap_primes/three_umap.html). The algorithm was run again compressing into a 3D space, instead of 2D. 
 Much of the structure remains stable, which is very pleasing.  This plot uses the "false colouring" to colour the points, as explained in below.
 
-![GIF of the visualisation rotating in the viewer](umap_rotates.gif)
+![GIF of the visualisation rotating in the viewer](imgs/umap_rotates.gif)
 
 The [2D plot can be viewed as well in the same viewer](https://johnhw.github.io/umap_primes/three_umap.html?npy=1e6_pts_2d_int16.npy&color=plasma).
 
@@ -98,35 +97,36 @@ The image above is reduced from a 1000000x78628 (!) binary matrix to 1000000x2. 
 
 #### How does UMAP work?
 If you want to know what UMAP does -- and it is the magic ingredient here -- then I thoroughly recommend the video by UMAP's author, Leland McInnes:
-<iframe width="1280" height="720" src="https://www.youtube.com/embed/nq6iPZVUxZU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+<iframe width="100%" height="35%" src="https://www.youtube.com/embed/nq6iPZVUxZU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
 
 ### What are we seeing?
 
 The points can be filtered according to whatever criteria we might be interested in. For example, the parity of the numbers (even=green, odd=orange)
-![Coloured by parity of the points](primes_even_odd_4k_crop.png)
+![Coloured by parity of the points](imgs/primes_even_odd_4k_crop.png)
 
 or alternatively by the whether the points are prime or not (white=prime, blue=composite).
-![Coloured by primeness of the points](is_prime_1k.png)
+![Coloured by primeness of the points](imgs/is_prime_1k.png)
 
 As might be expected, the primes form the vague, diffuse cluster near the centre, as they are all orthogonal to each other.
 
 Extending this idea, we can colour the points by number of unique factors:
-![Coloured by number of unique factors](primes_colored_1k.png)
+![Coloured by number of unique factors](imgs/primes_colored_1k.png)
 
 We can colour the points according to the prime factors they contain, where the log of the factor is mapped to hue, with redder=smaller, bluer=larger
 factor. This generalises the parity plot above. This plot has just a touch of spatial noise added to try and separate out the colours more clearly, 
 as each factor pass is rendered as a separate layer.
-![Coloured by factors present, hue mapped to prime factor](primes_mod_multispectral_4k_crop.png)
+![Coloured by factors present, hue mapped to prime factor](imgs/primes_mod_multispectral_4k_crop.png)
 
 #### Sequences
 We can look at where common sequences of numbers lie. This isn't particularly informative, but there is perhaps some pattern.
 
 For example, the Fibonacci sequence:
-![Fibonacci sequence numbers marked in yellow](primes_A000045.png)
+![Fibonacci sequence numbers marked in yellow](imgs/primes_A000045.png)
 
 or the squares:
-![Squares marked in yellow](primes_A000290.png)
+![Squares marked in yellow](imgs/primes_A000290.png)
  
 
 #### A random control
@@ -137,7 +137,7 @@ To test this, I created a 1000000x78628 sparse matrix with the same density of 1
 reran the algorithm. The result is this:
 
 ![A random control; layout of random points with same density and dimension. Brightness artificially boosted to make
-results clearer.](primes_umap_random_crop.png)
+results clearer.](imgs/primes_umap_random_crop.png)
 
 The same plasma colour map is used as in the first plot. The result **isn't** just random noise, so there clearly is some artifacting going on (or it could also 
 be artifacts of NumPy's random number generator, but I think that's unlikely to give the structure we see). 
@@ -150,7 +150,7 @@ This does not show that what is shown is some deep truth but it provides some ev
 
 
 #### The frontier
-It's worth noting that any structure that is not an algorithmic artificat is really the **frontier** of numbers at some threshold (in this case, 1 million). 
+It's worth noting that any structure that is not an algorithmic artifact is really the **frontier** of numbers at some threshold (in this case, 1 million). 
 *Every* possible 
 finite binary vector corresponds to at least one integer in this representation (actually, infinitely many, as all repeated factors are
 contracted onto a single binary indicator). Therefore, in the infinite set of integers, all points are present, at every possible angle or distance from 
@@ -162,4 +162,4 @@ their product is less than `n`.
 
 The [python code is available](https://gist.github.com/johnhw/dfc7b8b8519aac530ac97da226c17bd5).
 
-[Massive ~10k resolution version 16Mb](primes_umap_1e6_16k_tight_crop.png)
+[Massive ~10k resolution version 16Mb](imgs/primes_umap_1e6_16k_tight_crop.png)
