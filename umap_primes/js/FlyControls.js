@@ -137,7 +137,7 @@ THREE.FlyControls = function ( object, domElement ) {
 
 		if(test_tag(event)) return true;
 		this.clicked = true;
-
+		if(this.onclick) this.onclick();
 		
 
 		event.preventDefault();

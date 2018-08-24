@@ -102,7 +102,7 @@
         <div class="text" id="controls">
            
         <b>W A S D</b> move <b>Q E</b>; roll (a la Elite), <br> <b>R F</b> up/down, <b>mouse drag</b>, move viewport (in an unintuitive way)
-        <br> <b> T </b> toggle tooltip number display
+        <br> <b> T </b> toggle tooltip number display; click to factorise
         <br> <a href="index.md.html"> Explanation </a>
         
         
@@ -122,10 +122,10 @@
         <br> <a href="https://github.com/rsandor/number-theory"> number-theory </a> functions are available as <code>nt.xxx</code> (e.g. <code>nt.gcd(i,9)==3</code>)
         <br> The array variables <code>primes</code> and <code>composites</code> are built in, and list all primes/composites &lt; 1000000.
         <ul>
-        <li> If the predicate returns true/false, binary filtering is applied <code>i%2==0</code>
-        <li> If the predicate returns a float, the result will be used to colour the points, mapping 0.0->1.0 to the plasma colormap <code>i/1000000.0</code>
-        <li> If the predicate returns an array of 3 floats, the result will be used to colour the points as raw RGB <code>[i/1000000.0, i%2/2.0, i%5/5.0]</code>
-        <li> If the predicate returns an array of more than 3 floats, these are treated as specific indices to highlight <code>[11,23,55,67,81]</code> or <code>primes</code>
+        <li> If the snippet returns true/false, binary filtering is applied <code>i%2==0</code>
+        <li> If the snippet returns a single float, the result will be used to colour the points, mapping 0.0->1.0 to the plasma colormap <code>i/1000000.0</code>
+        <li> If the snippet returns an array of 3 floats, the result will be used to colour the points as raw RGB <code>[i/1000000.0, i%2/2.0, i%5/5.0]</code>
+        <li> <b> Special case </b>If the snippet returns an array of more than 3 floats, these are treated as specific indices to highlight <code>[11,23,55,67,81]</code> or <code>primes</code>
         </ul>
         <br>
             <textarea rows="2" cols="80" id="predicate_text"> true

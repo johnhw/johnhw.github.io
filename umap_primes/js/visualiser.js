@@ -5,7 +5,7 @@
  var npy_fname = url.searchParams.get("npy") || '1e6_pts_3d_int16.npy';
  var color_mode = url.searchParams.get("color") || 'factors';
  var simple_points = url.searchParams.get("simple") || false;
-
+ var mode_3d = npy_fname.indexOf("3d")>=0; // check filename to see if 3D or 2D structre
 
  var primes; // Int32 array of primes
  var plasma_cmap = interpolateArray(plasma);
@@ -146,6 +146,25 @@ var index_material = new THREE.ShaderMaterial({
      renderer.setSize(container.clientWidth, container.clientHeight);
      container.appendChild(renderer.domElement);
      var tooltip = document.getElementById("number_tooltip");
+     var known_factors = {};
+     var current_tooltip_number = 0;
+
+     function update_factorisation()
+     {
+         if(current_tooltip_number!==0)
+            known_factors[current_tooltip_number] = nt.factor(current_tooltip_number);
+     }
+
+     // Return an HTML version of the factors
+     function factor_string(factors)
+     {
+        var html = [];
+        for(var i=0;i<factors.length;i++)
+        {
+            html.push(factors[i].prime + " <sup> " + factors[i].power + " </sup> ");
+        }
+        return "<i>" + html.join(" * ") + "</i>";
+     }
 
      // animate loop
      function animate() {
@@ -164,10 +183,24 @@ var index_material = new THREE.ShaderMaterial({
             material.uniforms.size.value = Math.sqrt(n/(n_selected+1));
             if(index!==0 && controls.tooltips)
             {                    
-                tooltip.style.left = (controls.mousePageX-100) + "px";
-                tooltip.style.top = (controls.mousePageY-20) + "px";
+                current_tooltip_number = index; // so we can factorise if clicked
+                tooltip.style.left = (controls.mousePageX+10) + "px";
+                tooltip.style.top = (controls.mousePageY+20) + "px";
                 tooltip.style.display = 'block';
-                tooltip.innerHTML = index;
+                
+                if(known_factors[index])
+                {
+                    tooltip.style.width = "14em";
+                    tooltip.style.height = "2em";
+
+                    tooltip.innerHTML = index + "<br>" + factor_string(known_factors[index]);
+                }
+                else
+                {
+                    tooltip.style.width = "5em";
+                    tooltip.style.height = "1em";
+                    tooltip.innerHTML = index;
+                }
             }
             else
             {
@@ -183,7 +216,8 @@ var index_material = new THREE.ShaderMaterial({
          // only update if focused
          if (container === document.activeElement)
              controls.update(1);
-         if (!controls.clicked)
+        // attract mode rotate, for 3D mode only, until the first user click
+         if (!controls.clicked && mode_3d)
          {
              pts.rotateY(0.0015);
              index_buffer_pts.rotateY(0.0015);
@@ -203,7 +237,7 @@ var index_material = new THREE.ShaderMaterial({
      controls.domElement = renderer.domElement; //window.document;
      controls.container = container;
      controls.rollSpeed = 0.01;
-
+     controls.onclick = update_factorisation;
      controls.autoForward = false;
      controls.dragToLook = true;
 
