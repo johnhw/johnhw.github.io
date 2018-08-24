@@ -195,11 +195,11 @@ input[type=range]::-webkit-slider-runnable-track {
     
     .tooltip {
         display: none;
-        background: #333333;    
+        /*background: #333333;    */
         padding: 10px;
         opacity: 0.75;
         position: absolute;
-        border: 1px solid white;
+        /*border: 1px solid white;*/
         text-align: center;
         width: 60px;
         z-index: 1000;        
@@ -209,3 +209,10 @@ input[type=range]::-webkit-slider-runnable-track {
         color:#ffffff;
 
     }
+
+.factors
+{
+    font-size: 9pt;
+    color: #dddddd;
+    font-style: italic;
+}    

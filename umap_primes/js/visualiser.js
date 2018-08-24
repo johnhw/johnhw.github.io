@@ -163,7 +163,7 @@ var index_material = new THREE.ShaderMaterial({
         {
             html.push(factors[i].prime + " <sup> " + factors[i].power + " </sup> ");
         }
-        return "<i>" + html.join(" * ") + "</i>";
+        return "<div class=\"factors\">" + html.join(" * ") + "</div>";
      }
 
      // animate loop
@@ -190,7 +190,7 @@ var index_material = new THREE.ShaderMaterial({
                 
                 if(known_factors[index])
                 {
-                    tooltip.style.width = "14em";
+                    tooltip.style.width = "11em";
                     tooltip.style.height = "2em";
 
                     tooltip.innerHTML = index + "<br>" + factor_string(known_factors[index]);
