@@ -17,15 +17,17 @@
 
  // create colours to use as lookup indices
  var index_colors = new Float32Array(n * 3);
+ var selected = new Uint8Array(n);
  for(var k=0;k<n;k++)
  {     
     var i = k;
     index_colors[k*3] = ((i>>16)&0xff)/255.0;
     index_colors[k*3+1] = ((i>>8)&0xff)/255.0;
     index_colors[k*3+2] = ((i>>0)&0xff)/255.0;
-
+    selected[i] = 1;
  }
  var n_selected = n;
+ 
  function filter_points() {
      element = document.getElementById("predicate_text");
      code = "var _pred = function(i) { return " + element.value + ";}";
@@ -38,11 +40,13 @@
          n_selected = 0;
          for (i = 0; i < n; i++) {
              if (_pred(i)) {
+                 selected[i] = 1;
                  n_selected += 1;
                  colours[i * 3] = col_data[i * 3] / 255.0;
                  colours[i * 3 + 1] = col_data[i * 3 + 1] / 255.0;
                  colours[i * 3 + 2] = col_data[i * 3 + 2] / 255.0;
              } else {
+                 selected[i] = 0;
                  colours[i * 3] = 0.0;
                  colours[i * 3 + 1] = 0.0;
                  colours[i * 3 + 2] = 0.0;
@@ -52,6 +56,7 @@
          n_selected = n;
          for (i = 0; i < n; i++) {
              var rgb = plasma_cmap(_pred(i));
+             selected[i] = 1;
              colours[i * 3] = rgb.r;
              colours[i * 3 + 1] = rgb.g;
              colours[i * 3 + 2] = rgb.b;
@@ -60,6 +65,7 @@
         n_selected = n;
          for (i = 0; i < n; i++) {
              var rgb = _pred(i);
+             selected[i] = 1;
              colours[i * 3] = rgb[0];
              colours[i * 3 + 1] = rgb[1];
              colours[i * 3 + 2] = rgb[2];
@@ -70,7 +76,7 @@
         n_selected = test_result.length;
          // allow an explicit list of indices to highlight
         for (i = 0; i < n; i++) {
-            
+            selected[i] = 0;
             colours[i * 3] = 0.0;
             colours[i * 3 + 1] = 0.0;
             colours[i * 3 + 2] = 0.0;
@@ -78,6 +84,7 @@
         for(k=0;k<test_result.length;k++)
         {
             var i = test_result[k];
+            selected[i] = 1;
             colours[i * 3] = col_data[i * 3] / 255.0;
             colours[i * 3 + 1] = col_data[i * 3 + 1] / 255.0;
             colours[i * 3 + 2] = col_data[i * 3 + 2] / 255.0;
@@ -181,7 +188,7 @@ var index_material = new THREE.ShaderMaterial({
             var index = ((read[0]<<16) + (read[1]<<8) + (read[2]));
             // adjust size to compensate if we only select a few values
             material.uniforms.size.value = Math.sqrt(n/(n_selected+1));
-            if(index!==0 && controls.tooltips)
+            if(index!==0 && controls.tooltips && selected[index]!==0)
             {                    
                 current_tooltip_number = index; // so we can factorise if clicked
                 tooltip.style.left = (controls.mousePageX+10) + "px";
