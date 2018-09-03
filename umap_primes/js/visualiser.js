@@ -149,7 +149,7 @@ var index_material = new THREE.ShaderMaterial({
      var renderer = new THREE.WebGLRenderer();
      var bufferTexture = new THREE.WebGLRenderTarget(container.clientWidth,  container.clientHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter});
  
-     var pts, index_buffer_pts;
+     var pts_three, index_buffer_pts_three; // the objects referencing the buffers
      renderer.setSize(container.clientWidth, container.clientHeight);
      container.appendChild(renderer.domElement);
      var tooltip = document.getElementById("number_tooltip");
@@ -180,8 +180,8 @@ var index_material = new THREE.ShaderMaterial({
             // read back from the second buffer and find out
             // the index under the cursor
             var read = new Uint8Array(4);
-            pts.visible=false;
-            index_buffer_pts.visible=true;
+            pts.visible_three=false;
+            index_buffer_pts_three.visible=true;
             renderer.render(scene, camera, bufferTexture);
             renderer.readRenderTargetPixels( bufferTexture, controls.mouseRenderX, controls.mouseRenderY, 1, 1, read );
             // convert color back into integer index        
@@ -226,12 +226,12 @@ var index_material = new THREE.ShaderMaterial({
         // attract mode rotate, for 3D mode only, until the first user click
          if (!controls.clicked && mode_3d)
          {
-             pts.rotateY(0.0015);
-             index_buffer_pts.rotateY(0.0015);
+             pts_three.rotateY(0.0015);
+             index_buffer_pts_three.rotateY(0.0015);
          }
 
-        pts.visible=true;
-        index_buffer_pts.visible=false;
+        pts_three.visible=true;
+        index_buffer_pts_three.visible=false;
         renderer.render(scene, camera);
 
      }
@@ -295,12 +295,12 @@ var index_material = new THREE.ShaderMaterial({
      pt_buffer.translate(-mean[0] / n, -mean[1] / n, -mean[2] / n);
      pt_buffer.scale(2, 2, 2);
 
-     pts = new THREE.Points(pt_buffer, material);     
-     index_buffer_pts = new THREE.Points(pt_buffer, index_material);     
+     pts_three = new THREE.Points(pt_buffer, material);     
+     index_buffer_pts_three = new THREE.Points(pt_buffer, index_material);     
 
      camera.lookAt(0, 0.0, 0);
-     scene.add(pts);
-     scene.add(index_buffer_pts);
+     scene.add(pts_three);
+     scene.add(index_buffer_pts_three);
 
      var three_div = document.createElement('div');
      three_div.className = 'text';

@@ -157,7 +157,23 @@ contracted onto a single binary indicator). Therefore, in the infinite set of in
 each other, and the space would be perfectly evenly filled. However, by cutting off at some specific `n`, we see the "surface" that we have reached by composing together primes such that
 their product is less than `n`.
 
-It might be tempting to say that the images show "what primes look like"; but it would be more accurate to say that they show "what a million looks like".
+It might be tempting to say that the images show "what primes look like"; but it would be more accurate to say that they show "a portrait of a million".
+
+
+#### Is this stable?
+One important question arises from the stochastic nature of the UMAP algorithm: is what we see
+reproducible and stable, or the artifact of one particular run of the algorithm. The results below
+show ten repetitions of exactly the same data with random initial conditions. While parts of the image 
+move around (as would be expected) it is clear that the structure that is revealed remains comparable.
+
+![Ten runs of the same layout with random starting conditions](imgs/stability_plot.png)
+
+These images are manually
+aligned so that the large cluster with the smooth gradient (highlighted with the green box in the first image)
+is in the same place in each plot, for easier comparison.
+
+It should be noted that this doesn't show the effect of different hyperparameters of the UMAP algorithm.
+
 
 
 ### Code
