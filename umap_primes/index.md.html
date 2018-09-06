@@ -20,15 +20,16 @@ more about the layout algorithm than any *"true"* structure of numbers. However,
 
 [Large 4k version of the image suitable for backgrounds](imgs/primes_umap_1e6_4k.png)
 
-## Video
+### Video
 A short video, showing the numbers being added in sequence. Each frame adds 1000 integers,
 for a total of 1000 frames.
 
 <iframe width="726" height="408" src="https://www.youtube.com/embed/nCk8dyU7zUM" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
+Note that the layout is a fixed layout for 1M points, and the video shows the points in this 1M point filtered over time. It is not a recomputation of the layout
+for each subset, as that would be too unstable to make a useful animation.
 
-
-## 3D view
+### 3D view
 
 There is a WebGL live in-browser [3D viewer here](https://johnhw.github.io/umap_primes/three_umap.html). The algorithm was run again compressing into a 3D space, instead of 2D. 
 Much of the structure remains stable, which is very pleasing.  This plot uses the "false colouring" to colour the points, as explained in below.
@@ -37,6 +38,13 @@ Much of the structure remains stable, which is very pleasing.  This plot uses th
 
 The [2D plot can be viewed as well in the same viewer](https://johnhw.github.io/umap_primes/three_umap.html?npy=1e6_pts_2d_int16.npy&color=plasma).
 
+
+## What if we go further?
+
+The image below shows the results for two million integers, with an even richer texture.
+![Two million integers laid out with UMAP](imgs/primes_umap_2e6.png)
+
+Going beyond this is restricted by available RAM, but it seems that computing layouts up to around 10-20M points should be possible.
 
 ## Representation
 Each natural number can be thought of as being *composed* of a number of simple elements: the product of their prime factors. For example 50 = 5 * 5 * 2. The prime
@@ -53,14 +61,27 @@ and inner product (angle) to this space. These are very high-dimensional vectors
 
 Each integer is represented
 as a vector, one element for each possible prime factor, where 0=prime factor not present, 1=prime factor present. This provides a simple geometry for the
-integers, where each number can be seen as being composed of prime basis vectors.
+integers, where each number can be seen as being composed of prime basis vectors.  These high-dimensional vectors are then squashed down
+from thousands of dimensions for each number to just two dimensions, in a way that keeps points with common factors close together, and then a point is plotted at that 2D coordinate.  The points are laid out so that numbers with similar "angles" to each other are close together. For example, all primes are at 90 degrees to each other, and all powers of a number are identical to each other (0 degree angle).
+
+The points are coloured according to the original integer index; brighter colours correspond to larger numbers.
 
 For example, 10 might be represented as `[1 0 1 0 0 0 0 ...]` as it has factors 2 and 5 (the first and third primes respectively). This isn't a *unique* representation,
-as it represents all repeated prime factors with the same vector (e.g. `2=[1 0 0 0...]` and `4=[1 0 0 0 ...]` and `8=[1 0 0 0 ...]`, etc.). 
+as it represents all repeated prime factors with the same vector (e.g. `2=[1 0 0 0...]`, `4=[1 0 0 0 ...]` and `8=[1 0 0 0 ...]`, and so on for every power of 2). 
 
-These high-dimensional vectors are then squashed down
-from thousands of dimensions for each number to just two dimensions, and a point plotted at that coordinate. The points are coloured according to 
-the original integer index; brighter colours correspond to larger numbers. The points are laid out so that numbers with similar "angles" to each other are close together. For example, all primes are at 90 degrees to each other, and all powers of a number are identical to each other (0 degree angle).
+This means that every number is represented as a point inside (actually on the corners of) a $n$-dimensional cube, spanning `[0 0 0 ...]` to `[1 1 1 ...]`. We might postulate that these integers lie on some interesting subspace of this cube. For example, they could lie on a **manifold**, a topological structure which is locally like "normal" Euclidean space but bent and twisted into some higher dimensional space. The effect of UMAP is to try and disentangle any manifold that might exist, and "unwrap" it in a lower dimension, essentially by cutting and gluing parts of the high-dimensional space together (very loosely speaking). This is analagous to the way a 3D sphere can be approximately squashed to a plane with some gaps by cutting it into orange-wedge segments and gluing them together. In this case, the unwrapping was to two dimensions, to make it easy for humans to look at.
+
+### The frontier
+
+It's worth noting that any structure that is not an algorithmic artifact is really the **frontier** of numbers at some threshold (in this case, 1 million). 
+*Every* possible 
+finite binary vector corresponds to at least one integer in this representation (actually, infinitely many, as all repeated factors are
+contracted onto a single binary indicator). Therefore, in the infinite set of integers, all points are present, at every possible angle or distance from 
+each other, and the space would be perfectly evenly filled. However, by cutting off at some specific `n`, we see the "surface" that we have reached by composing together primes such that
+their product is less than `n`. It's the specific sparsity that we get by capturing only the numbers less than some limit that brings the structure. As any binary matrix corresponds to a possibly non-unique collection of integers in this representation, any selection criterion for choosing that matrix is an implicit criterion for the numbers chosen.
+
+It might be tempting to say that the images show "what primes look like"; but it would be more accurate to say that they show "a portrait of a million".
+
 
 
 ### Algorithm
@@ -69,7 +90,7 @@ the original integer index; brighter colours correspond to larger numbers. The p
     * For each `i`, make binary vector with [`π(n)`](https://en.wikipedia.org/wiki/Prime-counting_function) columns (π(n) = number of primes less than `n`), where each element has `1`=prime factor present, `0`=absent. 
 * Stack all vectors into a large, sparse matrix 
     
-* Lay out with UMAP, using the cosine distance function (dot product).
+* Lay out with UMAP, using the cosine distance function (normalised dot product).
 
 
 I used [`li(n)`](https://en.wikipedia.org/wiki/Logarithmic_integral_function) as a cheap upper bound on `π(n)` to estimate the number of columns needed.
@@ -93,7 +114,9 @@ For example, for `n=11`, the matrix looks like:
 
 ```
 
-The image above is reduced from a 1000000x78628 (!) binary matrix to 1000000x2.  This only works because of the excellent sparse matrix support in UMAP.
+Each row represents one integer. Each column represents the presence or absence of the prime factor for that integer.
+
+The image at the top is reduced from a 1000000x78628 (!) binary matrix to 1000000x2.  This only works because of the excellent sparse matrix support in UMAP.
 
 #### How does UMAP work?
 If you want to know what UMAP does -- and it is the magic ingredient here -- then I thoroughly recommend the video by UMAP's author, Leland McInnes:
@@ -101,7 +124,7 @@ If you want to know what UMAP does -- and it is the magic ingredient here -- the
 <iframe width="100%" height="35%" src="https://www.youtube.com/embed/nq6iPZVUxZU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
 
-### What are we seeing?
+## What are we seeing?
 
 The points can be filtered according to whatever criteria we might be interested in. For example, the parity of the numbers (even=green, odd=orange)
 ![Coloured by parity of the points](imgs/primes_even_odd_4k_crop.png)
@@ -119,7 +142,7 @@ factor. This generalises the parity plot above. This plot has just a touch of sp
 as each factor pass is rendered as a separate layer.
 ![Coloured by factors present, hue mapped to prime factor](imgs/primes_mod_multispectral_4k_crop.png)
 
-#### Sequences
+### Sequences
 We can look at where common sequences of numbers lie. This isn't particularly informative, but there is perhaps some pattern.
 
 For example, the Fibonacci sequence:
@@ -128,8 +151,9 @@ For example, the Fibonacci sequence:
 or the squares:
 ![Squares marked in yellow](imgs/primes_A000290.png)
  
+## Reproducibility
 
-#### A random control
+### A random control
 How much of what we see is just algorithmic artifacts, and how much is to do with the number representation? One way of getting at that question
 is to rerun the layout algorithm with a similar, sparse binary matrix, but with random entries. 
 
@@ -142,41 +166,99 @@ results clearer.](imgs/primes_umap_random_crop.png)
 The same plasma colour map is used as in the first plot. The result **isn't** just random noise, so there clearly is some artifacting going on (or it could also 
 be artifacts of NumPy's random number generator, but I think that's unlikely to give the structure we see). 
 
-I am 
-not sure what the blobby clusters represent, but they are possibly related to the count of 1s in each vector. Note, however, that the colouring
-is random and diffuse, and there are no loop structures or hierarchical clusters. These seem to be a function of the data chosen.
+I am  not sure what the blobby clusters represent, but they are possibly related to the count of 1s in each vector. Note, however, that the colouring
+is random and diffuse, and there are no loop structures or hierarchical clusters. These seem to be a true function of the data chosen.
 
 This does not show that what is shown is some deep truth but it provides some evidence that the result is not wholly arbitrary, along with a hint of caution that even random data can produce *some* apparent structure.
 
 
-#### The frontier
-It's worth noting that any structure that is not an algorithmic artifact is really the **frontier** of numbers at some threshold (in this case, 1 million). 
-*Every* possible 
-finite binary vector corresponds to at least one integer in this representation (actually, infinitely many, as all repeated factors are
-contracted onto a single binary indicator). Therefore, in the infinite set of integers, all points are present, at every possible angle or distance from 
-each other, and the space would be perfectly evenly filled. However, by cutting off at some specific `n`, we see the "surface" that we have reached by composing together primes such that
-their product is less than `n`.
-
-It might be tempting to say that the images show "what primes look like"; but it would be more accurate to say that they show "a portrait of a million".
-
-
-#### Is this stable?
+### Is this stable?
 One important question arises from the stochastic nature of the UMAP algorithm: is what we see
-reproducible and stable, or the artifact of one particular run of the algorithm. The results below
-show ten repetitions of exactly the same data with random initial conditions. While parts of the image 
+reproducible and stable, or the artifact of one particular run of the algorithm? The results below
+show ten repetitions of exactly the same data with the same hyperparameters but random initial conditions. While parts of the layout
 move around (as would be expected) it is clear that the structure that is revealed remains comparable.
 
 ![Ten runs of the same layout with random starting conditions](imgs/stability_plot.png)
 
 These images are manually
 aligned so that the large cluster with the smooth gradient (highlighted with the green box in the first image)
-is in the same place in each plot, for easier comparison.
+is in the same place in each plot, for easier comparison. The rotation of the layout as produced by UMAP is arbitrary.
 
 It should be noted that this doesn't show the effect of different hyperparameters of the UMAP algorithm.
 
+#### Hyperparameters
+UMAP is flexible and can be configured to produce different layouts, which can be configured using *hyperparameters* that affect the
+way the layout is generated. It is wise to be cautious when using dimensional reduction algorithms, as the results can pull apparent 
+structure from nothing at all if configured poorly; or alternatively reveal to find structure that is there. 
+See, for example, [How to Use tSNE Effectively](https://distill.pub/2016/misread-tsne/) on Distill.pub,
+or the example [using UMAP on a Gaussian noise blob](https://github.com/lmcinnes/umap/issues/94) for cautionary tales. 
+
+UMAP has [two key hyperparameters](https://umap-learn.readthedocs.io/en/latest/parameters.html):
+* **n_neighbors** which "balances local versus global structure in the data". **Default 15.**
+* **min_dist** which "controls how tightly UMAP is allowed to pack points together". **Default: 0.1**
+
+The results below show a number of runs of the 1M point layout with different UMAP configurations. While there is a significant effect
+of the hyperparameters, it appears that the underlying structure is fairly stable. The hyperparameters were randomly uniforms sampled 
+from **n_neighbours** in [3,32] and **min_dist** in [0.02, 0.95]. This gives a range of reasonable values. Fifteen variations are shown below. 
+
+![Fifteen variations of the 1M point layout, with different randomly selected hyperparameters **n_neighbors** and **min_dist**. The label at the top left indicates the parameters: *nn* means **n_neighbours** and *min_d* means **min_dist**. The change in colouring is an artifact and is not relevant.](imgs/hyperparameters_grid.png)
+
+UMAP has many other hyperparameters that can be tweaked, but most of them would be expected to have a relatively small effect on the final layout (though might affect the efficiency of the layout process). 
+
+##### Initialisation
+The UMAP algorithm can be initialised randomly, or using a spectral initialisation algorithm. Both variations lead to virtually indistinguishable results for this dataset, though the spectral initialisation is significantly more RAM-hungry. For example, the 2M point image below was computed with random initialisation. The 1M point image at the top was computed with spectral initialisation.
 
 
-### Code
+## Some statistics
+
+We can put some simple bounds on the elements of vectors for a given limit $n$. 
+
+* There will be $\pi(n)$ columns and $n$ rows.
+* We can characterise the number of non-zero elements $r_i$ in each row $i$.
+* Every row has at least one non-zero value (exactly one where prime) $r_i\geq 1$
+* Any row can have at most as many non-zero values as the largest $k$ for which the [primorial](https://en.wikipedia.org/wiki/Primorial) $p_k$ &lt; $i$
+
+Therefore,
+$$1\leq r_i \leq p_k$$
+The total number of non-zero vectors in the whole matrix is just $$\sum_{i=2}^n r_i.$$
+
+
+$p_k$ [is approximately](https://math.stackexchange.com/questions/106260/interpolating-the-primorial-p-n) 
+$$ p_k \approx e^{k\log(k)}$$
+
+![Primorial function versus $e^{k \log k}$](imgs/primorial_approximation.svg)
+
+#### Erdős–Kac
+There is a very elegant result in probabilistic number theory, the [Erdős–Kac theorem](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Kac_theorem). This, in summary, says that the number of unique prime factors of (large) $i$ is $$R_i \sim \mathcal{N}(\log \log i, \sqrt{\log \log i}).$$ That is, the number of unique factors is a random variable normally distributed with mean $\log \log n$ and standard deviation $\sqrt{\log \log n}.$
+
+### n=1000000
+We can examine these properties for the 1M vector example.
+
+* 100000 rows, 78498 columns, as $\pi(1000000)= 78498$.
+* Min 1 non-zero element per row, max 7 elements per row.
+* For $n=1000000$, the largest index is $k=7$ as $p_7=510510$ and $p_8=9699690$.
+* Thus every row has between 1 and 7 non-zero elements.
+* 0.003653% of all entries (2853710 of 78498000000) are non-zero
+* Each row has mean 2.85 entries, std. dev. 0.99
+
+By Erdős-Kac we would expect there to be  $$\frac{1}{n-2} \sum_{i=2}^{n} \mathbb{E}[R_i] = \frac{1}{n-2} \sum_{i=2}^n \log \log i 
+$$ entries. For 1M integers, this works out to an expected 2.54 entries per row or a matrix density of 0.002032%; a pretty good approximation!
+
+#### Sparsity
+It should be apparent that this space is extremely sparsely populated. There are $2^78498$ corners of the cube in which the data lies, of which only 2853710 (about $2^21$) are occupied. This is ignoring the interior volume of the cube, which is entirely empty.
+
+### Distribution of distances
+
+In the layout plotted originally, distances are computed with the cosine distance. One question that occurs is: what is the distribution of distances of pairs of these vectors under this metric? Since the layout generated by UMAP depends only on the inter-vector distances, this gives us some insight into the vectors we might expect. As discussed above, every vector corresponding to a prime is an orthogonal basis vector and has a cosine distance of 1.0 to every other prime (90 degrees separation). 
+
+The distribution can be examined empirically. The plot below shows a histogram of the distribution of the cosine distances between pairs of vectors. It is based on a random sample of 20M pairs of (non-equal) rows from the 1M point dataset. There is a clear spike at 1.0, but an interesting distribution in between. 
+
+![Distribution of cosine distances between vectors representing random integers from 2 to 1M, computed from 20M samples.](imgs/cosine_histogram.svg)
+
+Below is a plot of cosine distance of $x$ and $y$ versus $\log\ \gcd(x,y)$. This has suprisingly little structure.
+![Cosine distance of vectors corresponding to pairs of numbers against log GCD of those numbers](imgs/gcd_cosine_angle.png)
+
+## Code
 
 The [python code is available](https://gist.github.com/johnhw/dfc7b8b8519aac530ac97da226c17bd5).
 
