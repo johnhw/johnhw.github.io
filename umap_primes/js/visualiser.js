@@ -15,6 +15,11 @@
  var pt_buffer = new THREE.BufferGeometry();
  var index_pt_buffer = new THREE.BufferGeometry();
 
+function clip(x, a, b)
+{
+    return Math.min(Math.max(x,a),b);
+}
+
  // create colours to use as lookup indices
  var index_colors = new Float32Array(n * 3);
  var selected = new Uint8Array(n);
@@ -54,8 +59,8 @@
          }
      } else if (typeof (test_result) == "number") {
          n_selected = n;
-         for (i = 0; i < n; i++) {
-             var rgb = plasma_cmap(_pred(i));
+         for (i = 0; i < n; i++) {             
+             var rgb = plasma_cmap(clip(_pred(i), 0,1));
              selected[i] = 1;
              colours[i * 3] = rgb.r;
              colours[i * 3 + 1] = rgb.g;

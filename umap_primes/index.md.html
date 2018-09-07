@@ -187,9 +187,8 @@ is in the same place in each plot, for easier comparison. The rotation of the la
 It should be noted that this doesn't show the effect of different hyperparameters of the UMAP algorithm.
 
 #### Hyperparameters
-UMAP is flexible and can be configured to produce different layouts, which can be configured using *hyperparameters* that affect the
-way the layout is generated. It is wise to be cautious when using dimensional reduction algorithms, as the results can pull apparent 
-structure from nothing at all if configured poorly; or alternatively reveal to find structure that is there. 
+UMAP is flexible and has a number of *hyperparameters* that can be configured to produce different layouts. It is wise to be cautious when using dimensional reduction algorithms, as the results can pull apparent 
+structure from nothing at all if configured poorly; or alternatively fail to find structure that is there. 
 See, for example, [How to Use tSNE Effectively](https://distill.pub/2016/misread-tsne/) on Distill.pub,
 or the example [using UMAP on a Gaussian noise blob](https://github.com/lmcinnes/umap/issues/94) for cautionary tales. 
 
@@ -197,7 +196,7 @@ UMAP has [two key hyperparameters](https://umap-learn.readthedocs.io/en/latest/p
 * **n_neighbors** which "balances local versus global structure in the data". **Default 15.**
 * **min_dist** which "controls how tightly UMAP is allowed to pack points together". **Default: 0.1**
 
-The results below show a number of runs of the 1M point layout with different UMAP configurations. While there is a significant effect
+The results below show a number of runs of the 1M point layout with different hyperparameters. While there is a significant effect
 of the hyperparameters, it appears that the underlying structure is fairly stable. The hyperparameters were randomly uniforms sampled 
 from **n_neighbours** in [3,32] and **min_dist** in [0.02, 0.95]. This gives a range of reasonable values. Fifteen variations are shown below. 
 
