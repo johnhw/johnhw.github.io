@@ -81,7 +81,12 @@ The points are coloured according to the original integer index; brighter colour
 For example, 10 might be represented as `[1 0 1 0 0 0 0 ...]` as it has factors 2 and 5 (the first and third primes respectively). This isn't a *unique* representation,
 as it represents all repeated prime factors with the same vector (e.g. `2=[1 0 0 0...]`, `4=[1 0 0 0 ...]` and `8=[1 0 0 0 ...]`, and so on for every power of 2). 
 
+### Manifolds and graphs
 This means that every number is represented as a point inside (actually on the corners of) a $n$-dimensional cube, spanning `[0 0 0 ...]` to `[1 1 1 ...]`. We might postulate that these integers lie on some interesting subspace of this cube. For example, they could lie on a **manifold**, a topological structure which is locally like "normal" Euclidean space but bent and twisted into some higher dimensional space. The effect of UMAP is to try and disentangle any manifold that might exist, and "unwrap" it in a lower dimension, essentially by cutting and gluing parts of the high-dimensional space together (very loosely speaking). This is analagous to the way a 3D sphere can be approximately squashed to a plane with some gaps by cutting it into orange-wedge segments and gluing them together. In this case, the unwrapping was to two dimensions, to make it easy for humans to look at.
+
+The manifold hypothesis is clearly dubious for this dataset because the integers are necessarily discrete and cannot form a continuous space -- the points are all on the corners of a hypercube by definition! It makes no particular sense to interpolate between any of these vectors (one could postulate an extended number system which included arbitrary interpolated elements, it would just correspond to the positive orthant of the infinite dimensional vector space over the reals, $\mathbf{x} \in \mathbb{R}^\infty, 0 \leq x_i \leq 1$,  and not be especially interesting). 
+
+A better conceptual model would be a graph, where each vertex is a number, and there is an edge between every number sharing a prime factor, with edges weighted by the number of shared factors. The vector space geometry is perhaps better thought of as a convenient way of embedding this graph to define norms and perform a (relatively) smooth deformation onto the plane for display via UMAP.
 
 ### The frontier
 
