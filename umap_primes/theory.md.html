@@ -11,12 +11,12 @@ window.markdeepOptions = {tocStyle:'none'};</script><script src="js/markdeep.min
 
 Can we analyse the layout further? In particular there are several questions that remain:
 
-* Can we derive results about the layout for any N? For example, what distribution of clusters might we see.
+* Can we derive general results about the layout for any N? For example, what distribution of clusters might we see.
 * Can we identify which parts of this layout are specific to prime factorisation, and which are "common" properties?
 
 One way to address these issues is to take a stochastic approach. This can either be approached analytically, looking at probabilistic number theory to determine factorisation relations among random integers and linking this to random graph theory and/or random matrix theory (e.g. what is the distribution of eigenvalues of the factorisation connectivity graph). 
 
-There are also empirical approaches, where we can analyse the results obtained statistically as well as compare against surrogate datasets which have been simulated based on analytical or statistcal estimates (e.g. drawing a random sample from a random graph with the same edge weight distribution). 
+There are also empirical approaches, where we can analyse  results obtained statistically as well as compare against surrogate datasets which have been simulated based on analytical or statistcal estimates (e.g. drawing a random sample from a random graph with the same edge weight distribution). 
 
 UMAP is fundamentally a toplogical approach. Our argument might proceed:
 * probabilistic number theory -> distributions over properties of random integers -> distributions over edge weights of a graph.
@@ -26,10 +26,11 @@ UMAP is fundamentally a toplogical approach. Our argument might proceed:
 ## Notation
 
 * $i,j,n$ natural numbers, such that $i,j \leq n$
-* $i^\prime$, the number $i$ with all repeated prime factors collapsed to an exponent of 1. For example if $i=12=2^2 \times 3$, then $i^\prime=2^1 \times 3^1=6$.
+* $i^\prime$, the [squarefree](https://en.wikipedia.org/wiki/Square-free_integer) version of $i$ with all repeated prime factors collapsed to an exponent of 1. For example if $i=12=2^2 \times 3$, then $i^\prime=2^1 \times 3^1=6$.
+* $\mathbb{N}^{[2]}$ the set of all squarefree numbers, i.e. with prime factor exponent at most 1. $\{2,3,5,6,7,9,11,13,14,17,19,21,...\}$
 * $\omega(i)$ the count of unique prime factors of $i$
 * $p(k)$ the [primorial](https://en.wikipedia.org/wiki/Primorial) function for index $k$
-* $p_k$ the $k$th prime number.
+* $p_k$ the $k$ th prime number.
 * $\pi(n)$ the number of prime numbers $\leq n$.
 
 
@@ -37,19 +38,29 @@ UMAP is fundamentally a toplogical approach. Our argument might proceed:
 
 We can see the transform as being analogous to a logarithmic transform, replacing a product of integers with a sum of vectors.
 
-For a number $i$, we can see it as:
+For a number $i$, by the fundamental theorem of arithmetic:
 
-$$i = \prod_k=1^{\pi(i^\prime)} p_k^{a_k},$$ where $a_k$ are the corresponding exponents of each prime.
+$$i = \prod_{k=1}^{\pi(i)} p_k^{a_k},$$ where $a_k$ are the corresponding exponents of each prime $p_k$.
 
-replacing with the collapsed version $i^\prime$:
+Replacing with the squarefree $i^\prime$ that has no repeated exponents:
 
-$$i^\prime = \prod_k=1^{\pi(i^\prime)} b_k p_k,$$ where $b_k$ is a binary indicator variable (0 or 1).
+$$i^\prime = \prod_{k=1}^{\pi(i^\prime)} b_k p_k,$$ where $b_k$ is a binary indicator variable (0 or 1). By the properties of the logarithm,
 
-$$\log(i^\prime) = \log(\sum_k=1^{\pi(i^\prime)} b_k p_k)$$
+$$\log(i^\prime) = \log\left( \sum_{k=1}^{\pi(i^\prime)} b_k p_k \right)$$
 
-In the vector space representation, $i^\prime$ is represented as:
-$$\mathbb{x_i} = \sum_k=1^{\pi(i^\prime) b_k x_k$$, where $x_k$ is the $k$th standard basis vector.
+In the vector space representation, $i^\prime$ is represented as a vector $\mathbf{x_i}$:
+$$\mathbf{x_i} = \sum_{k=1}^{\pi(i^\prime)} b_k \mathbf{x_k},$$ where $x_k$ is the $k$ th standard basis vector, all zeros except a 1 in position $k$ . These vectors are orthogonal and so do not "interact" in the sum. However, when we apply dimensional reduction, we often form linear combinations of these vectors, which correspond to products in the original number domain.
 
+### The inner product
+There is a second important relation in that the unique factors of the greatest common divisor of two numbers $i^\prime$ and $j^\prime$ $\omega(\gcd(i^\prime, j^\prime))$ is equivalent to the dot product of $\mathbf{x_i}$ and $\mathbf{x_j}$, $\mathbf{x_i} \cdot \mathbf{x_j}$, which can be seen from the fact that the dot product will count the intersection of factors in  both $x_i$ and $x_j$.
+
+$$\omega(gcd(i,j)) = \mathbf{x_i} \cdot \mathbf{x_j}$$
+
+This means that in the vector space, we have our basic operations (assuming that $i, j \in \mathbb{N}^{[2]}$ ):
+* $\mathbf{x_i}+\mathbf{x_j}$ equivalent to $ij$
+* $a\mathbf{x_i}$ equivalent to $i^{a}$ 
+* $\mathbf{0}$ equivalent to $1$.
+* $\mathbf{x_i} \cdot \mathbf{x_j}$ equivalent to $\omega(\gcd(i,j))$
 
 
 ## Some statistics
