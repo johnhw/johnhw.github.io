@@ -84,9 +84,10 @@ as it represents all repeated prime factors with the same vector (e.g. `2=[1 0 0
 ### Manifolds and graphs
 This means that every number is represented as a point inside (actually on the corners of) a $n$-dimensional cube, spanning `[0 0 0 ...]` to `[1 1 1 ...]`. We might postulate that these integers lie on some interesting subspace of this cube. For example, they could lie on a **manifold**, a topological structure which is locally like "normal" Euclidean space but bent and twisted into some higher dimensional space. The effect of UMAP is to try and disentangle any manifold that might exist, and "unwrap" it in a lower dimension, essentially by cutting and gluing parts of the high-dimensional space together (very loosely speaking). This is analagous to the way a 3D sphere can be approximately squashed to a plane with some gaps by cutting it into orange-wedge segments and gluing them together. In this case, the unwrapping was to two dimensions, to make it easy for humans to look at.
 
-The manifold hypothesis is clearly dubious for this dataset because the integers are necessarily discrete and cannot form a continuous space -- the points are all on the corners of a hypercube by definition! It makes no particular sense to interpolate between any of these vectors (one could postulate an extended number system which included arbitrary interpolated elements, it would just correspond to the positive orthant of the infinite dimensional vector space over the reals, $\mathbf{x} \in \mathbb{R}^\infty, 0 \leq x_i \leq 1$,  and not be especially interesting). 
+The manifold hypothesis is clearly very dubious for this dataset because the integers are necessarily discrete and cannot form a continuous space -- the vectors are all on the corners of a hypercube by definition! It makes no particular sense to interpolate between any of these vectors (while one could postulate an extended number system which included arbitrary interpolated elements, it would just correspond to the positive orthant of the infinite dimensional vector space over the reals, $\mathbf{x} \in \mathbb{R}^\infty, 0 \leq x_i \leq 1$,  and not be especially interesting). 
 
-A better conceptual model would be a graph, where each vertex is a number, and there is an edge between every number sharing a prime factor, with edges weighted by the number of shared factors. The vector space geometry is perhaps better thought of as a convenient way of embedding this graph to define norms and perform a (relatively) smooth deformation onto the plane for display via UMAP.
+A better conceptual model would be a graph, where each vertex is a number, and there is an edge between every number sharing a prime factor, with edges weighted by the number of shared factors (normalised in a particular way: see below). The vector space geometry is perhaps better thought of as a convenient way of embedding this graph to define norms and perform a (relatively) smooth deformation onto the plane for display via UMAP.
+
 
 ### The frontier
 
@@ -225,54 +226,8 @@ UMAP has many other hyperparameters that can be tweaked, but most of them would 
 The UMAP algorithm can be initialised randomly, or using a spectral initialisation algorithm. Both variations lead to virtually indistinguishable results for this dataset, though the spectral initialisation is significantly more RAM-hungry. For example, the 2M point image below was computed with random initialisation. The 1M point image at the top was computed with spectral initialisation.
 
 
-## Some statistics
-
-We can put some simple bounds on the elements of vectors for a given limit $n$. 
-
-* There will be $\pi(n)$ columns and $n$ rows.
-* We can characterise the number of non-zero elements $r_i$ in each row $i$.
-* Every row has at least one non-zero value (exactly one where prime) $r_i\geq 1$
-* Any row can have at most as many non-zero values as the largest $k$ for which the [primorial](https://en.wikipedia.org/wiki/Primorial) $p_k$ &lt; $i$
-
-Therefore,
-$$1\leq r_i \leq p_k$$
-The total number of non-zero vectors in the whole matrix is just $$\sum_{i=2}^n r_i.$$
 
 
-$p_k$ [is approximately](https://math.stackexchange.com/questions/106260/interpolating-the-primorial-p-n) 
-$$ p_k \approx e^{k\log(k)}$$
-
-![Primorial function versus $e^{k \log k}$](imgs/primorial_approximation.svg)
-
-#### Erdős–Kac
-There is a very elegant result in probabilistic number theory, the [Erdős–Kac theorem](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93Kac_theorem). This, in summary, says that the number of unique prime factors of (large) $i$ is $$R_i \sim \mathcal{N}(\log \log i, \sqrt{\log \log i}).$$ That is, the number of unique factors is a random variable normally distributed with mean $\log \log n$ and standard deviation $\sqrt{\log \log n}.$
-
-### n=1000000
-We can examine these properties for the 1M vector example.
-
-* 100000 rows, 78498 columns, as $\pi(1000000)= 78498$.
-* Min 1 non-zero element per row, max 7 elements per row.
-* For $n=1000000$, the largest index is $k=7$ as $p_7=510510$ and $p_8=9699690$.
-* Thus every row has between 1 and 7 non-zero elements.
-* 0.003653% of all entries (2853710 of 78498000000) are non-zero
-* Each row has mean 2.85 entries, std. dev. 0.99
-
-By Erdős-Kac we would expect there to be  $$\frac{1}{n-2} \sum_{i=2}^{n} \mathbb{E}[R_i] = \frac{1}{n-2} \sum_{i=2}^n \log \log i 
-$$ entries. For 1M integers, this works out to an expected 2.54 entries per row or a matrix density of 0.002032%; a pretty good approximation!
-
-#### Sparsity
-It should be apparent that this space is extremely sparsely populated. There are $2^78498$ corners of the cube in which the data lies, of which only 2853710 (about $2^21$) are occupied. This is ignoring the interior volume of the cube, which is entirely empty.
-
-### Distribution of distances
-
-In the layout plotted originally, distances are computed with the cosine distance. One question that occurs is: what is the distribution of distances of pairs of these vectors under this metric? Since the layout generated by UMAP depends only on the inter-vector distances, this gives us some insight into the vectors we might expect. As discussed above, every vector corresponding to a prime is an orthogonal basis vector and has a cosine distance of 1.0 to every other prime (90 degrees separation). 
-
-The distribution can be examined empirically. The plot below shows a histogram of the distribution of the cosine distances between pairs of vectors. It is based on a random sample of 20M pairs of (non-equal) rows from the 1M point dataset. There is a clear spike at 1.0, but an interesting distribution in between. 
-
-![Distribution of cosine distances between vectors representing random integers from 2 to 1M, computed from 20M samples.](imgs/cosine_histogram.svg)
-
-Below is a plot of cosine distance of $x$ and $y$ versus $\log\ \gcd(x,y)$. This has suprisingly little structure.
-![Cosine distance of vectors corresponding to pairs of numbers against log GCD of those numbers](imgs/gcd_cosine_angle.png)
 
 ## Code
 
