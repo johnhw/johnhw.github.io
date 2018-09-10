@@ -11,57 +11,85 @@ window.markdeepOptions = {tocStyle:'none'};</script><script src="js/markdeep.min
 
 Can we analyse the layout further? In particular there are several questions that remain:
 
-* Can we derive general results about the layout for any N? For example, what distribution of clusters might we see.
+* Can we derive general results about the layout for any N? For example, what distribution of clusters might we expect see.
 * Can we identify which parts of this layout are specific to prime factorisation, and which are "common" properties?
 
-One way to address these issues is to take a stochastic approach. This can either be approached analytically, looking at probabilistic number theory to determine factorisation relations among random integers and linking this to random graph theory and/or random matrix theory (e.g. what is the distribution of eigenvalues of the factorisation connectivity graph). 
+One way to address these issues is to take a stochastic approach. This can either be approached analytically, looking at probabilistic number theory to determine factorisation relations among random integers and then linking this to random graph theory and/or random matrix theory (e.g. what is the distribution of eigenvalues of the factorisation connectivity graph). 
 
-There are also empirical approaches, where we can analyse  results obtained statistically as well as compare against surrogate datasets which have been simulated based on analytical or statistcal estimates (e.g. drawing a random sample from a random graph with the same edge weight distribution). 
+There are also empirical approaches, where we can analyse results obtained statistically as well as compare against surrogate datasets which have been simulated based on analytical or statistical estimates (e.g. drawing a random sample from a random graph with the same edge weight distribution). 
 
-UMAP is fundamentally a toplogical approach. Our argument might proceed:
+UMAP is fundamentally a topological approach. Our argument might proceed:
 * probabilistic number theory -> distributions over properties of random integers -> distributions over edge weights of a graph.
-* random graph theory -> graph theoretic properties of this random graph -> properties of the simplicial complex UMAP identifies.
+* random graph theory -> graph theoretic properties of this random graph -> properties of the simplicial complex UMAP identifies -> properties of the layout as a function of the complex.
 * [possibly] random matrix theory -> properties of the adjacency matrix of the graph
+
 
 ## Notation
 
 * $i,j,n$ natural numbers, such that $i,j \leq n$
-* $i^\prime$, the [squarefree](https://en.wikipedia.org/wiki/Square-free_integer) version of $i$ with all repeated prime factors collapsed to an exponent of 1. For example if $i=12=2^2 \times 3$, then $i^\prime=2^1 \times 3^1=6$.
-* $\mathbb{N}^{[2]}$ the set of all squarefree numbers, i.e. with prime factor exponent at most 1. $\{2,3,5,6,7,9,11,13,14,17,19,21,...\}$
+* $i^\prime$, the [squarefree](https://en.wikipedia.org/wiki/Square-free_integer) "version" of $i$ with all repeated prime factors collapsed to an exponent of 1. For example if $i=12=2^2 \times 3$, then $i^\prime=2^1 \times 3^1=6$.
+* $\mathbb{N}^{[2]}$ the set of all squarefree numbers, i.e. with prime factor exponent at most 1. $\{2,3,5,6,7,11,13,14,17,19,21,...\}$
 * $\omega(i)$ the count of unique prime factors of $i$
 * $p(k)$ the [primorial](https://en.wikipedia.org/wiki/Primorial) function for index $k$
 * $p_k$ the $k$ th prime number.
 * $\pi(n)$ the number of prime numbers $\leq n$.
+* $\zeta(z)$ the [Riemann zeta function](https://en.wikipedia.org/wiki/Riemann_zeta_function). 
 
 
 ## What is the transform doing?
 
 We can see the transform as being analogous to a logarithmic transform, replacing a product of integers with a sum of vectors.
 
-For a number $i$, by the fundamental theorem of arithmetic:
+For any natural number $i \in \mathbb{N}$, by the fundamental theorem of arithmetic:
 
 $$i = \prod_{k=1}^{\pi(i)} p_k^{a_k},$$ where $a_k$ are the corresponding exponents of each prime $p_k$.
 
-Replacing with the squarefree $i^\prime$ that has no repeated exponents:
+Replacing with $i$ with the corresponding squarefree $i^\prime$ that has no repeated exponents:
 
 $$i^\prime = \prod_{k=1}^{\pi(i^\prime)} b_k p_k,$$ where $b_k$ is a binary indicator variable (0 or 1). By the properties of the logarithm,
 
 $$\log(i^\prime) = \log\left( \sum_{k=1}^{\pi(i^\prime)} b_k p_k \right)$$
 
 In the vector space representation, $i^\prime$ is represented as a vector $\mathbf{x_i}$:
-$$\mathbf{x_i} = \sum_{k=1}^{\pi(i^\prime)} b_k \mathbf{x_k},$$ where $x_k$ is the $k$ th standard basis vector, all zeros except a 1 in position $k$ . These vectors are orthogonal and so do not "interact" in the sum. However, when we apply dimensional reduction, we often form linear combinations of these vectors, which correspond to products in the original number domain.
+$$\mathbf{x_i} = \sum_{k=1}^{\pi(i^\prime)} b_k \mathbf{x_k},$$ where $x_k$ is the $k$ th standard basis vector, all zeros except a 1 in position $k$ . These vectors are orthogonal and so do not immediately interact in the sum in the way the log sum does. However, when we apply dimensional reduction, we often form linear combinations of these vectors, which correspond to products in the original number domain.
 
 ### The inner product
+
+$\omega(i)$ is the count of unique prime factors of $i$, and is therefore equal to the number of non-zero entries of $\mathbf{x_i}=\sum_k x_{ik}$. This means that we can derive Minkowski $p$ norms in terms of $\omega(i)$
+
+$$\|x_i\|_p = \left[ \sum_k x_{ik}^p \right]^{1/p},$$
+using the fact that $x_i$ has only binary elements for $i \in \mathbb{N}^{[2]}$,
+$$\|x_i\|_p = \left[ \sum_k x_{ik} \right]^{1/p}, $$
+$$= \omega(i)^{1/p}. $$
+
+
 There is a second important relation in that the unique factors of the greatest common divisor of two numbers $i^\prime$ and $j^\prime$ $\omega(\gcd(i^\prime, j^\prime))$ is equivalent to the dot product of $\mathbf{x_i}$ and $\mathbf{x_j}$, $\mathbf{x_i} \cdot \mathbf{x_j}$, which can be seen from the fact that the dot product will count the intersection of factors in  both $x_i$ and $x_j$.
 
-$$\omega(gcd(i,j)) = \mathbf{x_i} \cdot \mathbf{x_j}$$
+$$\omega(\gcd(i,j)) = \mathbf{x_i} \cdot \mathbf{x_j}$$
+
+
 
 This means that in the vector space, we have our basic operations (assuming that $i, j \in \mathbb{N}^{[2]}$ ):
 * $\mathbf{x_i}+\mathbf{x_j}$ equivalent to $ij$
 * $a\mathbf{x_i}$ equivalent to $i^{a}$ 
-* $\mathbf{0}$ equivalent to $1$.
-* $\mathbf{x_i} \cdot \mathbf{x_j}$ equivalent to $\omega(\gcd(i,j))$
+* $\mathbf{0}$ (the zero vector, additive identity) equivalent to $1$.
+* $\mathbf{x_i} \cdot \mathbf{x_j}$ = $\omega(\gcd(i,j))$
+* The $p$ norm $\|\mathbf{x_i}\|_p = \omega(\mathbf{x_i})^{1/p}$ 
 
+### The cosine distance
+
+The layouts plotted use the cosine distance:
+
+$$d(x_i, x_j) = 1 - \frac{x_i \cdot x_j}{\|x_i\|_2\|x_j\|_2}.$$ 
+
+By the results above,
+
+$$d(x_i, x_j) = 1 - \frac{x_i \cdot x_j}{\sqrt{\omega(i)}\sqrt{\omega(j)}}\\
+=1-\frac{\omega(\gcd(i, j))}{\sqrt{\omega(i)}\sqrt{\omega(j)}}. $$
+
+Correspondingly, if we view the problem as a graph with one vertex per natural number $i$ where edges are more heavily weighted the more closely numbers are related, then the edge weight $w_{ij}$ between vertex $i$ and $j$ is: 
+$$w_{ij}= \frac{\omega(\gcd(i, j))}{\sqrt{\omega(i)}\sqrt{\omega(j)}},$$ 
+ changing the distance to a similarity.
 
 ## Some statistics
 
@@ -87,7 +115,7 @@ There is a very elegant result in probabilistic number theory, the [Erdős–Kac
 
 ![Erdos-Kac theorem. The empirical number of factors for a given number, averaged over a running window of 500 consecutive numbers, against $\log \log n$, with a constant of 0.31 added. There is a very close match.](imgs/erdos_kac.png)
 
-It appears that the $\log log i$ result is close, but there is a constant offset of $\approx 0.31$.
+It appears that the $\log \log i$ result is close, but there is a constant offset of $\approx 0.31$.
 
 ### n=1000000
 We can examine these properties for the 1M vector example.
@@ -115,18 +143,7 @@ The distribution can be examined empirically. The plot below shows a histogram o
 
 
 #### Distribution of GCD
-Using the cosine distance, the vector norm will be: $$d(x_i, x_j) = 1 - \frac{x_i \cdot x_j}{\|x_i\|\|x_j\|}$$ Since the vectors are binary, this is:
 
-$$d(x_i, x_j) = 1 - \frac{h(x_i, x_j)}{\sqrt{h(x_i)}\sqrt{h(x_j)}}$$
-$$= 1 - \frac{h(x_i, x_j)}{\sqrt{\omega(i)}\sqrt{\omega(j)}}.$$
-
-where $h(x_i, x_j)$ is the Hamming distance of $x_i$ and $x_j$ and $h(x_i)$ is the shorthand for $h(x_i,0)$. $h(x_i)$ is equal to the number of distinct prime factors of $i$, written $\omega(i)$. The Hamming distance is just the count of the difference in factors. This is equal to the number of unique factors in the greatest common divisor of $i$ and $j$, $\omega(\gcd(i,j))$.
-
-Therefore a the distance $d(i,j)$ (as described above) for two numbers $i, j$ is: 
-$$d(i,j)= 1-\frac{\omega(\gcd(i, j))}{\sqrt{\omega(i)}\sqrt{\omega(j)}}.$$  
-
-Correspondingly, if we view the problem as a graph, then the edge between vertex $i$ and $j$ is:
-$$\w_{ij}= \frac{\omega(\gcd(i, j))}{\sqrt{\omega(i)}\sqrt{\omega(j)}},$$  changing the distance to a similarity.
 
 
 The distribution of  $\gcd(i,j)$ for random integers $i, j$ is known [Fernandez 2013](https://arxiv.org/pdf/1305.0536.pdf) and [Diaconis and Erdos 2004](https://projecteuclid.org/download/pdf_1/euclid.lnms/1196285379). It has PMF:
