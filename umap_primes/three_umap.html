@@ -26,12 +26,13 @@
         uniform float size;
         varying float f_opacity;
         uniform float opacity;
+        varying vec4 f_pos;
         void main()            
         {
           
 
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-          float point_size = size/(gl_Position.w+0.01);
+          float point_size = size/(gl_Position.w-0.1);
           if(color.r==0.0 && color.g==0.0 && color.b==0.0)
           {
             point_size = 1.0;
@@ -40,11 +41,12 @@
           }
           else 
           {
-            gl_PointSize = clamp(point_size, 1.0, 20.0);
+            
             f_opacity = clamp(point_size, 0.0, 1.0)*opacity;
             f_color = color;
           }
-          
+          f_pos = gl_Position;
+          gl_PointSize = clamp(point_size, 2.0, 40.0);
           
         }
         
@@ -55,10 +57,14 @@
         precision highp float;
         varying vec3 f_color;
         varying float f_opacity;
+        varying vec4 f_pos;
         uniform sampler2D point;
         void main()
         {
-          gl_FragColor 	= vec4(f_color, f_opacity * texture2D(point, gl_PointCoord));
+          float tex_opacity = texture2D(point, gl_PointCoord).r;
+          if(tex_opacity<0.15) discard;
+          gl_FragColor 	= vec4(f_color,tex_opacity);
+          
         }
 
     </script>
@@ -97,13 +103,16 @@
 
         <div class="heading">
             One million integers            
+            
         </div>  
-    
+        
+
         <div class="text" id="controls">
            
         <b>W A S D</b> move <b>Q E</b>; roll (a la Elite), <br> <b>R F</b> up/down, <b>mouse drag</b>, move viewport (in an unintuitive way)
         <br> <b> T </b> toggle tooltip number display; click to factorise
-        <br> <a href="index.md.html"> Explanation </a>
+        <br>
+        <br> <div class="subheading"> <a href="index.md.html"> Explanation </a>  </div>
         
         
     </div>  

@@ -104,7 +104,6 @@ function clip(x, a, b)
  var point_texture = new THREE.TextureLoader().load("imgs/point.png");
 
 
-
  vShader = document.getElementById("vertexshader");
  fShader = document.getElementById("fragmentshader");
 
@@ -113,10 +112,10 @@ var material = new THREE.ShaderMaterial({
   fragmentShader: fShader.text,
   vertexColors: THREE.VertexColors,
   transparent:true,
-  depthTest:false,
+  depthTest:true,
   blending:THREE.NormalBlending, 
   uniforms: {
-    opacity: { value: 0.1 },    
+    opacity: { value: 0.5 },    
     point: { type: "t", value: point_texture },
     size : { value: 1.0 },
     },
@@ -252,6 +251,7 @@ var index_material = new THREE.ShaderMaterial({
      controls.onclick = update_factorisation;
      controls.autoForward = false;
      controls.dragToLook = true;
+     
 
      scene.add(dummy);
      dummy.add(camera);

@@ -5,5 +5,9 @@ uniform sampler2D point;
 
 void main()
 {
-    gl_FragColor 	= vec4(f_color, f_opacity * texture2D(point, gl_PointCoord));
+    float tex_opacity = texture2D(point, gl_PointCoord).r;
+    if(tex_opacity<0.5) discard;
+    
+    gl_FragColor 	= vec4(f_color, f_opacity * tex_opacity);
+
 }

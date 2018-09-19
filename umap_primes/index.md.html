@@ -176,6 +176,13 @@ For example, the Fibonacci sequence:
 or the squares:
 ![Squares marked in yellow](imgs/primes_A000290.png)
  
+Colouring by sequence [A083140](https://oeis.org/A083140), the sieve of 		Sieve of Eratosthenes 
+read off in an anti-diagonal order, shows some vageu structure (but perhaps just a result of 
+approximate magnitude ordering).
+
+![Coloured according to OEIS A083140](imgs/A083140_1e6.png)
+
+
 ## Reproducibility
 
 ### A random control
@@ -233,6 +240,8 @@ UMAP has many other hyperparameters that can be tweaked, but most of them would 
 The UMAP algorithm can be initialised randomly, or using a spectral initialisation algorithm. Both variations lead to virtually indistinguishable results for this dataset, though the spectral initialisation is significantly more RAM-hungry. For example, the 2M point image below was computed with random initialisation. The 1M point image at the top was computed with spectral initialisation.
 
 
+# Theory
 
+[There are some rough and unfinished notes covering empirical and theoretical analysis of what we are seeing.](theory.md.html)
 
 

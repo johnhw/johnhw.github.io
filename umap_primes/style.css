@@ -22,6 +22,12 @@ body
 
 }
 
+.subheading 
+{
+    font-size: 12pt;
+    font-family: 'Comfortaa', serif;
+}
+
 .text
 {
     padding-top: 1em;

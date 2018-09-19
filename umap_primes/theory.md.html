@@ -16,7 +16,7 @@ Can we analyse the layout further? In particular there are several questions tha
 
 One way to address these issues is to take a stochastic approach. This can either be approached analytically, looking at probabilistic number theory to determine factorisation relations among random integers and then linking this to random graph theory and/or random matrix theory (e.g. what is the distribution of eigenvalues of the factorisation connectivity graph). 
 
-There are also empirical approaches, where we can analyse results obtained statistically as well as compare against surrogate datasets which have been simulated based on analytical or statistical estimates (e.g. drawing a random sample from a random graph with the same edge weight distribution). 
+There are also empirical approaches, where we can analyse results obtained statistically as well as compare against surrogate datasets which have been simulated based on analytical or statistical estimates (e.g. comparing with a draw from a sample of a random graph with the same edge weight distribution). 
 
 UMAP is fundamentally a topological approach. Our argument might proceed:
 * probabilistic number theory -> distributions over properties of random integers -> distributions over edge weights of a graph.
@@ -28,6 +28,7 @@ UMAP is fundamentally a topological approach. Our argument might proceed:
 
 * $i,j,n$ natural numbers, such that $i,j \leq n$
 * $i^\prime$, the [squarefree](https://en.wikipedia.org/wiki/Square-free_integer) "version" of $i$ with all repeated prime factors collapsed to an exponent of 1. For example if $i=12=2^2 \times 3$, then $i^\prime=2^1 \times 3^1=6$.
+* $s(i)$ is a function that maps integers to their squarefree forms ($i\rightarrow i^\prime$).
 * $\mathbb{N}^{[2]}$ the set of all squarefree numbers, i.e. with prime factor exponent at most 1. $\{2,3,5,6,7,11,13,14,17,19,21,...\}$
 * $\omega(i)$ the count of unique prime factors of $i$
 * $p(k)$ the [primorial](https://en.wikipedia.org/wiki/Primorial) function for index $k$
@@ -53,9 +54,9 @@ $$\log(i^\prime) = \log\left( \sum_{k=1}^{\pi(i^\prime)} b_k p_k \right)$$
 In the vector space representation, $i^\prime$ is represented as a vector $\mathbf{x_i}$:
 $$\mathbf{x_i} = \sum_{k=1}^{\pi(i^\prime)} b_k \mathbf{x_k},$$ where $x_k$ is the $k$ th standard basis vector, all zeros except a 1 in position $k$ . These vectors are orthogonal and so do not immediately interact in the sum in the way the log sum does. However, when we apply dimensional reduction, we often form linear combinations of these vectors, which correspond to products in the original number domain.
 
-### The inner product
+### The inner product and norms
 
-$\omega(i)$ is the count of unique prime factors of $i$, and is therefore equal to the number of non-zero entries of $\mathbf{x_i}=\sum_k x_{ik}$. This means that we can derive Minkowski $p$ norms in terms of $\omega(i)$
+$\omega(i)$ is the count of unique prime factors of $i$, and is therefore equal to the number of non-zero entries of $\mathbf{x_i}$, $\omega(i)=\sum_k x_{ik}$. This means that we can derive Minkowski $p$ norms in terms of $\omega(i)$
 
 $$\|x_i\|_p = \left[ \sum_k x_{ik}^p \right]^{1/p},$$
 using the fact that $x_i$ has only binary elements for $i \in \mathbb{N}^{[2]}$,
@@ -91,18 +92,26 @@ Correspondingly, if we view the problem as a graph with one vertex per natural n
 $$w_{ij}= \frac{\omega(\gcd(i, j))}{\sqrt{\omega(i)}\sqrt{\omega(j)}},$$ 
  changing the distance to a similarity.
 
+ For general $i,j \in \mathbb{N}$, then we can define $d(i,j)$ to be the equivalent, where the sqaurefreeing map $i \rightarrow i^\prime, j \rightarrow j^\prime$ is performed before distances are computed.
+
+ $$d(i,j) = 1-\frac{\omega(\gcd(i^\prime, j^\prime)}{\sqrt{\omega(i^\prime)}\sqrt{\omega(j^\prime)}}.$$
+
+ The dot product is not altered for general $i,j$, but the $p$ norm would be different without remapping to the squarefree numbers.
+
 ## Some statistics
 
 We can put some simple bounds on the elements of vectors for a given limit $n$. 
 
+For a matrix representing $n$ numbers:
+
 * There will be $\pi(n)$ columns and $n$ rows.
-* We can characterise the number of non-zero elements $r_i$ in each row $i$.
-* Every row has at least one non-zero value (exactly one where prime) $r_i\geq 1$
+* We can characterise the number of non-zero elements $\omega(i)$ in each row $i$.
+* Every row has at least one non-zero value (exactly one where prime) $\omega(i)\geq 1$
 * Any row can have at most as many non-zero values as the largest $k$ for which the [primorial](https://en.wikipedia.org/wiki/Primorial) $p(k)$ &lt; $i$
 
 Therefore,
-$$1\leq r_i \leq p(k)$$
-The total number of non-zero vectors in the whole matrix is just $$\sum_{i=2}^n r_i.$$
+$$1\leq \omega(i) \leq p(k)$$
+The total number of non-zero vectors in the whole matrix is just $$\sum_{i=2}^n \omega(i).$$
 
 
 $p(k)$ [is approximately](https://math.stackexchange.com/questions/106260/interpolating-the-primorial-p-n) 
@@ -127,11 +136,11 @@ We can examine these properties for the 1M vector example.
 * 0.003653% of all entries (2853710 of 78498000000) are non-zero
 * Each row has mean 2.85 entries, std. dev. 0.99
 
-By Erdős-Kac we would expect there to be  $$\frac{1}{n-2} \sum_{i=2}^{n} \mathbb{E}[\omega(i)] = \frac{1}{n-2} \sum_{i=2}^n \log \log i 
-$$ entries. For 1M integers, this works out to an expected 2.54 entries per row or a matrix density of 0.002032%; a pretty good approximation!
+By Erdős-Kac we would expect there to be  $$\frac{1}{n-2} \sum_{i=2}^{n} \mathbb{E}[\omega(i)] = \frac{1}{n-2} \sum_{i=2}^n \log \log i + C
+$$ entries. With C=0.31, For 1M integers, this works out to an expected 2.85 entries per row or a matrix density of 0.0036398%; a pretty good approximation!
 
 #### Sparsity
-It should be apparent that this space is extremely sparsely populated. There are $2^{78498}$ corners of the cube in which the data lies, of which only 2853710 (about $2^21$) are occupied. This is ignoring the interior volume of the cube, which is entirely empty.
+It should be apparent that this space is extremely sparsely populated. There are $2^{78498}$ corners of the cube in which the data lies, of which only 2853710 (about $2^{21}$) are occupied, so $2^{78477}$ corners are empty. This is ignoring the interior volume of the cube, which is entirely empty, though a vanishingly small proportion of the volume compared to the volume near the corners.
 
 ### Distribution of distances
 
@@ -143,8 +152,7 @@ The distribution can be examined empirically. The plot below shows a histogram o
 
 
 #### Distribution of GCD
-
-
+By the definition above, we can approach the distribution of cosine distances from probabilistic number theory.
 
 The distribution of  $\gcd(i,j)$ for random integers $i, j$ is known [Fernandez 2013](https://arxiv.org/pdf/1305.0536.pdf) and [Diaconis and Erdos 2004](https://projecteuclid.org/download/pdf_1/euclid.lnms/1196285379). It has PMF:
 
@@ -168,3 +176,7 @@ $$\mathbb{E}(d(n)) \approx 1-\frac{\log\log \left( \frac{6\log(n)}{\pi^2} \right
 $$ \approx 1-\frac{\log\log \left( \frac{6\log(n)}{\pi^2} \right)} {\log \log (n/2)}$$
 
 where $\mathbb{E[d(n)]}$ means the expected cosine distance of two numbers $i,j \sim U(2,n)$.
+
+### Coprimality and random graphs.
+
+The probability that two numbers $i,j \leq n$ are coprime (i.e. $\gcd(i,j)=1$) approaches $\frac{1}{\zeta(2)}=\frac{6}{\pi^2}$  [MathWorld](http://mathworld.wolfram.com/RelativelyPrime.html). If we ignore the weighting of the graph edges and treat the edges as binary, then the relations between the set of natural numbers $\leq n$ as described above is an [Erdős-Rényi](https://jeremykun.com/2013/08/22/the-erdos-renyi-random-graph/) random graph $G(n, 1-\frac{1}{\zeta(2)}) \approx G(n, p=0.39)$. The graph will be almost surely connected if $1-\frac{1}{\zeta(2)} > 5/n$, which happens for $n=13$. 
