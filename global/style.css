@@ -1,0 +1,65 @@
+/* palette
+112930 [text]
+EBF2FA [background]
+F46036 [highlight]
+427AA1 [bright]
+395E66 [medium]
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Muli&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono&display=swap');
+
+body
+{
+    color:#112930;
+    background: rgb(255, 255, 255); 
+    font-family: "Lato", sans-serif;
+    font-weight: 400;
+}   
+
+
+pre.listing
+{    
+    padding: 0.5em;
+    margin-left:2em;
+    font-family: "Fira Mono", monospace;
+    background: #f9f9f9;
+}
+
+.md code 
+{
+    font-family: "Fira Mono", monospace;
+    background: inherit;     
+}
+
+/* reset heading/link fonts to that of body */
+.md a,
+.md div.title, contents, .md .tocHeader,
+.md .nonumberh1, .md .nonumberh2, .md .nonumberh3, .md .nonumberh4, .md .nonumberh5, .md .nonumberh6,
+.md .shortTOC, .md .mediumTOC, .md .longTOC {
+    font-family: inherit;
+    color: inherit;
+}
+
+.md h1, .md h2, .md h3, .md h4, .md h5, .md h6
+{
+    font-family: "Muli", serif;
+    border: none;
+    color: #427AA1;
+}
+
+.md h1
+{
+    
+    
+    
+    color: #F46036
+    /* border-bottom: 1px solid #112930; */
+}
+
+hr 
+{
+    width: 0px;
+}

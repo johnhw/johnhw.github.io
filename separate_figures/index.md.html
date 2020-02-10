@@ -1,0 +1,97 @@
+<meta charset="utf-8"> 
+
+# Separating figures from a LaTeX document
+
+Some academic journals, like [PLoS One](https://journals.plos.org/plosone/s/figures), require that you submit a final document as a single self-contained LaTeX file, and all figures need to be submitted as separate image files, with any figures having multiple panels merged into a single image.
+
+If you have a paper with a lot of `\include`s and figures, this is a pain to do by hand, especially if things change during revision. It is possible to do this automatically.
+
+## Merging the file into one `.tex` file
+
+If you've used `\include{}` or `\input{}` you can merge into a single source file using [latexpand](https://ctan.org/pkg/latexpand?lang=en). 
+
+* Windows users using MikTex will first need to [install Perl](http://strawberryperl.com/) to get `latexpand` to work.
+
+`latexpand paper.tex > paper_merged.tex`
+
+### Merging the bibliography
+
+```sh
+pdflatex paper_merged.tex
+bibtex paper_merged.tex
+```    
+
+Copy and paste the contents of `paper_merged.bbl` into `paper_merged.tex`, replacing the `\thebibliography{}` line with the contents.
+
+## Separating the figures
+
+The following is based on [this StackOverflow answer by John Kormylo](https://tex.stackexchange.com/questions/423109/export-each-figure-as-a-separate-pdf-file).
+
+We can use the `endfloat` package. In the preamble, just after `\documentclass`, add:
+
+```latex
+\usepackage{endfloat}
+\usepackage{graphicx}
+
+\makeatletter
+\efloat@openpost{fff}
+\efloat@iwrite{fff}{\string\textwidth=\the\textwidth}
+\makeatother
+```
+
+Run `pdflatex paper_merged` and you will get a new file `paper_merged.fff` that has all the floating figures in it.
+
+### The figure document
+Now, create a new document `figures_separated.tex` with the following contents:
+
+```latex
+\documentclass[multi=figure]{standalone}
+\usepackage{graphicx}
+\usepackage{amsmath} % packages I used in figures
+\usepackage{subfig}
+
+%% Include all custom macros used in figures here
+
+\renewenvironment{figure}{\ignorespaces}{\unskip}
+\renewcommand{\caption}[2][]{\ignorespaces}
+\newcommand{\Figure}[1]{\ignorespaces}
+\let\efloatseparator=\empty
+\newcommand{\titlecaption}[2]{}
+\begin{document}
+\input{v2_paper.fff}
+\end{document}
+```
+
+If you've used any custom macros or packages inside your floats, you'll need to include the relevant packages and add any of your own macros from `paper_merged.tex` into the preamble of `separated_figures.tex`.
+
+Then:
+```
+pdflatex separated_figures.tex
+```
+
+to produce `separated_figures.pdf` which has each figure as a separate page.
+
+#### Making TIFFs
+PLoS One recommends all figures to be submitted as TIFF (unfortunately EPS is the only vector format PLoS support and it is not recommended...). [imagemagick](https://imagemagick.org/script/download.php) can convert this multi-page PDF to individual TIFF files in one go. 
+
+* Create a directory called `output_images`
+
+```
+magick convert -density 700 -scene 1 -background white -alpha remove -alpha off \
+      separated_figures.pdf  "output_figures/fig%d.tiff"
+```
+
+* on Windows, use `%%d` instead of `%d` to avoid shell escaping
+
+You should now have one TIFF file per figure, named `output_images/fig1.tiff` etc. You may need to adjust `density` if the images are too high or too low resolution -- `density 700` looked about right for my configuration.
+
+That's it, you're done!
+
+
+John H Williamson  
+
+[GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
+
+<link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
+<script>window.markdeepOptions = {tocStyle:'none'};</script>
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
