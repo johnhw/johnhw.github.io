@@ -50,6 +50,11 @@ pre.listing
     color: #427AA1;
 }
 
+.md a:hover
+{
+    color: #F46036
+}
+
 .md h1
 {
     
