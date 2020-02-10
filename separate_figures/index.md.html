@@ -4,30 +4,35 @@
 
 Some academic journals, like [PLoS One](https://journals.plos.org/plosone/s/figures), require that you submit a final document as a single self-contained LaTeX file, and all figures need to be submitted as separate image files, with any figures having multiple panels merged into a single image.
 
-If you have a paper with a lot of `\include`s and figures, this is a pain to do by hand, especially if things change during revision. It is possible to do this automatically.
+If you have a paper with a lot of `\include`s and figures, this is a pain to do by hand. It is possible to do this automatically.
 
 ## Merging the file into one `.tex` file
 
-If you've used `\include{}` or `\input{}` you can merge into a single source file using [latexpand](https://ctan.org/pkg/latexpand?lang=en). 
+To make sure the bibliography is included in the source, change your source to replace `\bibliography{...}` with 
+`\input{paper.bbl}`.
+
+Then:
+
+```
+latex paper.tex
+bibtex paper.tex
+```  
+
+to generate `paper.bbl`. 
+
+Use [latexpand](https://ctan.org/pkg/latexpand?lang=en) to include all `\input{}` and `\include{}` files, as well as the bibliography into one file.
+
+```
+latexpand paper.tex > paper_merged.tex
+```
 
 * Windows users using MikTex will first need to [install Perl](http://strawberryperl.com/) to get `latexpand` to work.
-
-`latexpand paper.tex > paper_merged.tex`
-
-### Merging the bibliography
-
-```sh
-pdflatex paper_merged.tex
-bibtex paper_merged.tex
-```    
-
-Copy and paste the contents of `paper_merged.bbl` into `paper_merged.tex`, replacing the `\thebibliography{}` line with the contents.
 
 ## Separating the figures
 
 The following is based on [this StackOverflow answer by John Kormylo](https://tex.stackexchange.com/questions/423109/export-each-figure-as-a-separate-pdf-file).
 
-We can use the `endfloat` package. In the preamble, just after `\documentclass`, add:
+We can use the `endfloat` package to split out all floats into a separate file. In the preamble, just after `\documentclass`, add:
 
 ```latex
 \usepackage{endfloat}
@@ -39,10 +44,10 @@ We can use the `endfloat` package. In the preamble, just after `\documentclass`,
 \makeatother
 ```
 
-Run `pdflatex paper_merged` and you will get a new file `paper_merged.fff` that has all the floating figures in it.
+Run `pdflatex paper_merged` and you will get a new file `paper_merged.fff` that has all the code for floating figures in it.
 
 ### The figure document
-Now, create a new document `figures_separated.tex` with the following contents:
+Create a new document `figures_separated.tex` with the following contents:
 
 ```latex
 \documentclass[multi=figure]{standalone}
@@ -77,8 +82,8 @@ PLoS One recommends all figures to be submitted as TIFF (unfortunately EPS is th
 * Create a directory called `output_images`
 
 ```
-magick convert -density 700 -scene 1 -background white -alpha remove -alpha off \
-      separated_figures.pdf  "output_figures/fig%d.tiff"
+magick convert -density 700 -scene 1 -background white -alpha remove \ 
+       -alpha off  separated_figures.pdf  "output_figures/fig%d.tiff"
 ```
 
 * on Windows, use `%%d` instead of `%d` to avoid shell escaping
