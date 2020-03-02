@@ -2,11 +2,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
-from life_utils import to_numpy, autoguess_life_file, zpad, life_numpy
+from life_utils import to_numpy, autoguess_life_file, zpad
 import IPython.display
 import scipy.ndimage
 import colorcet
 from PIL import Image, ImageDraw, ImageFont
+
+kernel = np.array([[2,2,2], [2,1,2], [2,2,2]])
+import scipy.signal
+def life_numpy(np_cells, boundary="wrap", mode="same"):
+    """Compute next generation from a binary NumPy array 
+    representing the cell states"""
+    result = scipy.signal.convolve2d(np_cells, kernel, mode=mode, boundary=boundary)        
+    return np.where(((result>4) & (result<8)), 1, 0)
+ 
 
 def get_cmap(cmap):
     """Return a colormap object,

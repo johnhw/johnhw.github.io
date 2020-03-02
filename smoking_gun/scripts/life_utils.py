@@ -35,6 +35,7 @@ def to_numpy(pos):
         dense[y, x] = 1
     return dense
 
+
 def from_numpy(np_cells):
     """Convert a numpy array back to a cell list"""
     return np.argwhere(np_cells).tolist()
@@ -400,26 +401,28 @@ def read_rle(fname):
     f.close()
     return positions, comments
 
+
 def life(cells):
-    """Takes a list of (x,y) points, and returns the next generation of the Game of Life."""    
-    neighbours = counter([(x+xo, y+yo) for x,y in cells for xo in [-1,0,1] for yo in [-1,0,1]])
-    return counter([cell for cell in neighbours if neighbours[cell]==3 or (neighbours[cell]==4 and cell in cells)])
+    """Takes a list of (x,y) points, and returns the next generation of the Game of Life."""
+    neighbours = counter(
+        [(x + xo, y + yo) for x, y in cells for xo in [-1, 0, 1] for yo in [-1, 0, 1]]
+    )
+    return counter(
+        [
+            cell
+            for cell in neighbours
+            if neighbours[cell] == 3 or (neighbours[cell] == 4 and cell in cells)
+        ]
+    )
 
-
-kernel = np.array([[2,2,2], [2,1,2], [2,2,2]])
-import scipy.signal
-def life_numpy(np_cells, boundary="wrap", mode="same"):
-    """Compute next generation from a binary NumPy array 
-    representing the cell states"""
-    result = scipy.signal.convolve2d(np_cells, kernel, mode=mode, boundary=boundary)        
-    return np.where(((result>4) & (result<8)), 1, 0)
- 
 
 def zpad(array, n):
-    return np.pad(array, [(n,n) for i in range(array.ndim)], mode='constant')
+    return np.pad(array, [(n, n) for i in range(array.ndim)], mode="constant")
+
 
 if __name__ == "__main__":
     import sys
+
     pat, comments = autoguess_life_file(sys.argv[1])
     print((rle_string(pat, comments=comments.split("\n"))))
 

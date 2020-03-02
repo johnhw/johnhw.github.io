@@ -1,0 +1,185 @@
+<meta charset="utf-8"> 
+
+# Hashlife
+![-](imgs/header.png)
+
+The [Hashlife algorithm](https://en.wikipedia.org/wiki/Hashlife) was invented by Bill Gosper in [#Gosper1984]. It is a very ingenious algorithm
+and one that has some subtlety in implemention. There are several good explanations on the web, including [Tomas Rokicki's Dr. Dobbs article](https://www.drdobbs.com/jvm/an-algorithm-for-compressing-space-and-t/184406478) 
+and [Jenny Owen's explanation](https://jennyhasahat.github.io/hashlife.html). 
+
+## Purpose
+
+We want to be able to evaluate a cellular automaton quickly, by pre-caching successors to states we have seen before. To make this efficient, we can cache things hierarchically, using a hierarchy over both space and time.
+
+## Algorithm
+
+Assume we have a quadtree, where the children of a node are named ABCD:
+
+**************
+*    A B     *
+*    C D     *
+**************
+
+If we can compute the successor of the "central" block of this node, we can always scan the entire quadtree to compute the complete successor of the quadtree, padding with zeros as needed:
+
+
+**********************************************************************
+* +-----+       |   +-----+        |     +-----+   |       
+* | 0 0 | 0 0   | 0 | 0 0 | 0      | 0 0 | 0 0 |   |
+* | 0 A | B X   | 0 | A B | X      | 0 A | B X |   |    ...
+* +-----+       |   +-----+        |     +-----+   |       
+*   0 C   D X   | 0   C  D  X      | 0 C   D X     |
+*   0 X   X X   | 0   X  X  X      | 0 X   X X     |
+**********************************************************************
+
+
+We can split a quadtree node into grandchildren (4x4 grid of grandchildren)
+
+****************************
+* AA    AB      BA      BB *
+*     +------------+       *
+* AC  | AD      BC |    BD *
+*     |            |       *
+* CA  | CB      DA |    DB *
+*     +------------+       *
+* CC    CD      DC      DD *
+****************************
+
+we want to compute the successor of the central region, that is what will be in:
+
+***********
+*  ad bc  *
+*  cb da  *
+***********
+
+in the future (lowercase to indicate the "successor of"). 
+
+We can further split a node into great grandchildren (8x8 grid of great grand children)
+
+*********************************************************************
+* AAA   AAB     ABA     ABB         BAA     BAB     BBA     BBB     *
+* AAC   AAD     ABC     ABD         BAC     BAD     BBC     BBD     *
+*                                                                   *
+*            +----------------------------------+                   *
+* ACA   ACB  |  ADA     ADB         BCA     BCB |   BDA     BDB     *
+* ACC   ACD  |  ADC     ADD         BCC     BCD |   BDC     BDD     *
+*            |                                  |                   *
+*            |                                  |                   *
+* CAA   CAB  |  CBA     CBB         DAA     DAB |   DBA     DBB     *
+* CAC   CAD  |  CBC     CBD         DAC     DAD |   DBC     DBD     *
+*            +----------------------------------+                   *
+*                                                                   *
+* CCA   CCB     CDA     CDB         DCA     DCB     DDA     DDB     *
+* CCC   CCD     CDC     CDD         DCC     DCD     DDC     DDD     *
+*********************************************************************
+
+
+
+Now we can find a way to split up the grandchildren of a node
+into nine overlapping child-size blocks so that we can compute successors of the size of the grandchildren.
+We then subdivide those successor blocks into great-grandchildren
+(lowercase indicates successor)
+
+*********************************************************************
+*         ╭╌╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╌╮   *
+*AA AB -->╎aad  abc╎    AB BA -->╎abd bac╎   BA BB  -->╎bad  bbc╎   *
+*         ╎    +---╎-------------╎-------╎-------------╎---+    ╎   *
+*AC AD    ╎acb |ada╎    AD BC    ╎adb bca╎   BC BD     ╎bcb| bda╎   *
+*         ╰╌╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╌╯   *
+*              |                                           |        *
+*         ╭╌╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╌╮   *
+*AC AD -->╎acd |adc╎    AD BC -->╎add bcc╎   BC BD  -->╎bcd| bdc╎   *
+*         ╎    |   ╎             ╎       ╎             ╎   |    ╎   *
+*CA CB    ╎cab |cba╎    CB DA    ╎cbb daa╎   DA DB     ╎dab| dba╎   *
+*         ╰╌╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╌╯   *
+*              |                                           |        *
+*         ╭╌╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╌╮   *
+*CA CB -->╎cad |cbc╎    CB DA -->╎cbd dac╎   DA DB  -->╎dad| dbc╎   *
+*CC CD    ╎    +---╎-------------╎-------╎-------------╎---+    ╎   *
+*         ╎ccb  cda╎    CD DC    ╎cdb dca╎   DC DD     ╎dcb  dda╎   *
+*         ╰╌╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╌╯   *
+*                                                                   *
+*********************************************************************
+
+Finally, we can select from those great-grandchildren sized
+successor blocks the "inner" parts to make up one full child-sized successor
+(a 4x4 block of great-grandchild successors)
+
+******************************************
+*   +-----------------+                  *
+*   |ada adb ╎ bca bcb|          +-----+ *
+*   |adc add ╎ bcc bcd|          |ad bc| *
+*   |╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌|       -->|     | *  
+*   |cba cbb ╎ daa dab|          |cb da| *
+*   |cbc cbd ╎ dac dad|          +-----+ *
+*   +-----------------+                  *
+******************************************
+
+
+## Levels
+
+Each node has a **level** $k$, where the size of the node is $2^k \times 2^k$.
+
+* level 0 is a 1x1 block which are just binary values
+* level 1 is a 2x2 block whose children are level 0 blocks
+* level 2 is 4x4 block whose children are level 1 blocks
+* level 3 is an 8x8 block whose children are level 2 blocks
+* etc.
+
+It doesn't matter much if the basic Life algorithm is slow. We can use basic brute-force, computing the 2x2 successor of a 4x4 cell by straightforward computation.
+
+
+## Datastructures
+
+* A **quadtree** `qtree` representing the state of the world at step $t$. Each element is a node `node(k, a, b, c, d, next_node)`, where `next_node` is a reference to the successor of this cell.
+
+## Functions
+
+* **centre(node)**  return a node at level `k+1`, which is centered on the given cell:
+*****************************************************
+*                           +----------------+
+*                           | 0   0    0   0 |
+*                           |                |
+*  +---------+              | 0   A    B   0 |
+*  | A    B  |              |                |
+*  |         |    -->       | 0   C    D   0 |
+*  | C    D  |              |                |
+*  +---------+              | 0   0    0   0 |
+*                           +----------------+
+*****************************************************
+
+* **join(a,b,c,d)** combine four children at level `k-1` to a new node at level `k`. If this turns out to be a cached node, return the cached node. Otherwise, create a new node, and compute its successor at $t+2^k$.
+*********************************************         
+*             +-------+
+*             | A   B |      +-+
+*             |       |  --> |N|
+*             | C   D |      +-+
+*             +-------+
+*********************************************         
+
+* **next(node)** return the central successor of a node at time $t+2^k$.
+******************************************************************************************         
+*             +-----------+             
+*             | A      B  |           .. .. .. ..  
+*             |           |             +-----+   
+*             |           |  -->      ..|ad bc|..  
+*             | C      D  |           ..|cb da|.. 
+*             |           |             +-----+   
+*             +-----------+           .. .. .. .. 
+******************************************************************************************         
+
+* **expand(node, clip=None)** transform a quadtree into a list of point coordinates that fall inside a given clipping window.
+
+## References
+
+[#Gosper1984]: Gosper, Bill (1984). "Exploiting Regularities in Large Cellular Spaces". Physica D. Elsevier. 10 (1–2): 75–80. doi:10.1016/0167-2789(84)90251-3.
+
+
+[John H Williamson](https://johnhw.github.io)
+
+[GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
+
+<link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
+<script>
+window.markdeepOptions = {tocStyle:'none'};</script>
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
