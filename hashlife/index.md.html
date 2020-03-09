@@ -14,9 +14,9 @@ If we have a collection of "on" cells as `(x,y)` pairs, a tiny Python program to
 
 ```python
 from collections import Counter
-def life(cells):    
-    ns = Counter([(x+a, y+b) for x,y in cells for a in [-1,0,1] for b in [-1,0,1]])
-    return Counter([p for p in ns if ns[p]==3 or (ns[p]==4 and p in cells)])
+def life(pts):    
+    ns = Counter([(x+a, y+b) for x,y in pts for a in [-1,0,1] for b in [-1,0,1]])
+    return Counter([p for p in ns if ns[p]==3 or (ns[p]==4 and p in pts)])
 ```
 
 This implementation has no limits on universe size, other than memory limitations.
@@ -175,12 +175,74 @@ It doesn't matter much if the basic Life algorithm is slow. We can use basic bru
 
 ## Datastructures
 
-* A **quadtree** `qtree` representing the state of the world at step $t$. Each element is a node `node(k, a, b, c, d, n)`, where `n` is the number of on cells in this node (useful for bookkeeping and display)
-* A **mapping** `node -> successor` that maps known nodes to their successors.
+* A **quadtree** `qtree` representing the state of the world at step $t$. Each element is a node `node(k, a, b, c, d, n, hash)`, where `n` is the number of on cells in this node (useful for bookkeeping and display) and `hash` is a precomputed hash of this node -- if we don't do this, Python will recursively compute the hash every time it is needed!
+
+```python
+from collections import namedtuple
+_Node = namedtuple("Node", ["k", "a", "b", "c", "d", "n", "hash"])
+
+class Node(_Node):    
+     def __hash__(self):
+        return self.hash
+    
+     def __repr__(self):
+        # print nicely
+        return f"Node k={self.k}, {1&lt;&lt;self.k} x {1&lt;&lt;self.k}, population {self.n}"
+        
+```
+
+We have two base level cells, `on` and `off`
+
+```python
+# base level binary nodes
+on = Node(0, None, None, None, None, 1, 1)
+off = Node(0, None, None, None, None, 0, 0)
+```
+
+Everything else is handled using `lru_cache` from `functools` which gives us an automatically garbage-collected and size-limited cache.
 
 ## Functions
 
-* **centre(node)**  return a node at level `k+1`, which is centered on the given cell:
+* **join(a,b,c,d)** combine four children at level `k-1` to a new node at level `k`. If this turns out to be a cached node, return the cached node. Otherwise, create a new node, and add it to the cache.
+
+*********************************************         
+*             +-------+
+*             | A   B |      +-+
+*             |       |  --> |N|
+*             | C   D |      +-+
+*             +-------+
+*********************************************   
+
+We can use the [least recently used cache](https://docs.python.org/3/library/functools.html) to automatically cache results, so we eliminate repeated nodes:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=2**24)
+def join(a, b, c, d):        
+    n = a.n + b.n + c.n + d.n
+    nhash = (
+            a.k + 2 +
+            + 5131830419411 * a.hash + 3758991985019 * b.hash
+            + 8973110871315 * c.hash + 4318490180473 * d.hash
+        ) & ((1 << 63) - 1)    
+    return Node(a.k + 1, a, b, c, d, n, nhash) 
+```
+
+The hashing constants are arbitrary.
+
+
+* **get_zero(k)** return an empty node at level `k`
+
+```python
+@lru_cache(maxsize=1024)
+def get_zero(k):
+    return off if k==0 else join(get_zero(k - 1), get_zero(k - 1), 
+                                 get_zero(k - 1), get_zero(k - 1))    
+```
+
+* **centre(node)**  return a node at level `k+1`, which is centered on the given quadtree node:
+
 *****************************************************
 *                           +----------------+
 *                           | 0   0    0   0 |
@@ -193,15 +255,32 @@ It doesn't matter much if the basic Life algorithm is slow. We can use basic bru
 *                           +----------------+
 *****************************************************
 
-* **join(a,b,c,d)** combine four children at level `k-1` to a new node at level `k`. If this turns out to be a cached node, return the cached node. Otherwise, create a new node, and add it to the cache.
+```python
+def centre(m):
+    z = get_zero(m.k - 1)  
+    return join(
+        join(z, z, z, m.a), join(z, z, m.b, z),
+        join(z, m.c, z, z), join(m.d, z, z, z)
+    )
+```      
 
-*********************************************         
-*             +-------+
-*             | A   B |      +-+
-*             |       |  --> |N|
-*             | C   D |      +-+
-*             +-------+
-*********************************************         
+* **life_4x4(node)** return the next generation of a $k=2$ (i.e. 4x4) cell. This is the base case of the recursion. It is slow, but this doesn't matter as it will only be called a constant number of times at most.
+
+```python
+
+# life rule, for a 3x3 collection of cells, where E is the centre
+def life(a, b, c, d, E, f, g, h, i):
+    outer = sum([t.n for t in [a, b, c, d, f, g, h, i]])
+    return on if (E.n and outer == 2) or outer == 3 else off
+
+def life_4x4(m):
+    na = life(m.a.a, m.a.b, m.b.a, m.a.c, m.a.d, m.b.c, m.c.a, m.c.b, m.d.a)  
+    nb = life(m.a.b, m.b.a, m.b.b, m.a.d, m.b.c, m.b.d, m.c.b, m.d.a, m.d.b)  
+    nc = life(m.a.c, m.a.d, m.b.c, m.c.a, m.c.b, m.d.a, m.c.c, m.c.d, m.d.c)  
+    nd = life(m.a.d, m.b.c, m.b.d, m.c.b, m.d.a, m.d.b, m.c.d, m.d.c, m.d.d)  
+    return join(na, nb, nc, nd)
+
+```
 
 * **successor(node)** return the central successor of a node at time $t+2^{k-2}$, either from the successor cache, or by the recursive rules set out above (caching the result).
 ******************************************************************************************         
@@ -214,12 +293,249 @@ It doesn't matter much if the basic Life algorithm is slow. We can use basic bru
 *             +-----------+           .. .. .. .. 
 ******************************************************************************************         
 
-* **expand(node, clip=None)** transform a quadtree into a list of (x,y) cell coordinates that fall inside a given clipping window (e.g. for display).
 
-* **construct(cells)** convert a set of (x,y) coordinates into a quadtree by recursively merging blocks together.
+To compute one generation ahead, we could apply the rule given above:
 
-* **advance(node, n)** find the `n`th successor of a given node. Since we compute the $2^{k-2}$th successor of a level $k$ node, we can advance by any $n$ by
-using the binary expansion of $n$ to find the successor. For example, a 64x64, $k=6$ node can be advanced 9 generations by advancing each $k=5$ node by 8 generations and each $k=2$ by one generation.
+```python
+@lru_cache(maxsize=2**20)
+def next_gen(m):
+    """Return the 2**k-1 x 2**k-1 successor, 1 generation forward"""    
+    if m.n==0: # empty
+        return m.a    
+    elif m.k == 2:  # base case               
+        s = life_4x4(m)    
+    else:
+        c1 = next_gen(join(m.a.a, m.a.b, m.a.c, m.a.d))
+        c2 = next_gen(join(m.a.b, m.b.a, m.a.d, m.b.c))
+        c3 = next_gen(join(m.b.a, m.b.b, m.b.c, m.b.d))
+        c4 = next_gen(join(m.a.c, m.a.d, m.c.a, m.c.b))        
+        c5 = next_gen(join(m.a.d, m.b.c, m.c.b, m.d.a))
+        c6 = next_gen(join(m.b.c, m.b.d, m.d.a, m.d.b))
+        c7 = next_gen(join(m.c.a, m.c.b, m.c.c, m.c.d))
+        c8 = next_gen(join(m.c.b, m.d.a, m.c.d, m.d.c))
+        c9 = next_gen(join(m.d.a, m.d.b, m.d.c, m.d.d))
+        
+        s = join(
+            (join(c1.d, c2.c, c4.b, c5.a)),
+            (join(c2.d, c3.c, c5.b, c6.a)),
+            (join(c4.d, c5.c, c7.b, c8.a)),
+            (join(c5.d, c6.c, c8.b, c9.a)),
+        )                    
+    return s
+```
+However, this is much less efficient than the true Hashlife algorithm, which computes $2^{k-2}$ steps into the future for a level $k$ input. The code to do this is almost the same but has a double recursion:
+
+```python
+@lru_cache(maxsize=2**24)
+def successor(m):    
+    """Return the 2**k-1 x 2**k-1 successor, 2**k-2 generations forward"""    
+    if m.n==0: # empty
+        return m.a    
+    elif m.k == 2:  # base case               
+        s = life_4x4(m)    
+    else:
+        c1 = successor(join(m.a.a, m.a.b, m.a.c, m.a.d))
+        c2 = successor(join(m.a.b, m.b.a, m.a.d, m.b.c))
+        c3 = successor(join(m.b.a, m.b.b, m.b.c, m.b.d))
+        c4 = successor(join(m.a.c, m.a.d, m.c.a, m.c.b))        
+        c5 = successor(join(m.a.d, m.b.c, m.c.b, m.d.a))
+        c6 = successor(join(m.b.c, m.b.d, m.d.a, m.d.b))
+        c7 = successor(join(m.c.a, m.c.b, m.c.c, m.c.d))
+        c8 = successor(join(m.c.b, m.d.a, m.c.d, m.d.c))
+        c9 = successor(join(m.d.a, m.d.b, m.d.c, m.d.d))
+
+        # recurse again, inside each sub-element
+        s = join(
+            successor(join(c1, c2, c4, c5)),
+            successor(join(c2, c3, c5, c6)),
+            successor(join(c4, c5, c7, c8)),
+            successor(join(c5, c6, c8, c9)),
+        )   
+    return s
+```
+
+The problem here is that if we wanted to compute some smaller jump forward, there is no easy way to do so. Adding a parameter `j` allows a skip by any power of 2 smaller or equal to $2^{k-2}$.
+
+```python
+@lru_cache(maxsize=2**24)
+def successor(m, j=None):
+    """Return the 2**k-1 x 2**k-1 successor, 2**j generations in the future"""        
+    if m.n==0: # empty
+        return m.a    
+    elif m.k == 2:  # base case               
+        s = life_4x4(m)    
+    else:        
+        c1 = successor(join(m.a.a, m.a.b, m.a.c, m.a.d), j)
+        c2 = successor(join(m.a.b, m.b.a, m.a.d, m.b.c), j)
+        c3 = successor(join(m.b.a, m.b.b, m.b.c, m.b.d), j)
+        c4 = successor(join(m.a.c, m.a.d, m.c.a, m.c.b), j)        
+        c5 = successor(join(m.a.d, m.b.c, m.c.b, m.d.a), j)
+        c6 = successor(join(m.b.c, m.b.d, m.d.a, m.d.b), j)
+        c7 = successor(join(m.c.a, m.c.b, m.c.c, m.c.d), j)
+        c8 = successor(join(m.c.b, m.d.a, m.c.d, m.d.c), j)
+        c9 = successor(join(m.d.a, m.d.b, m.d.c, m.d.d), j)
+        
+        if j is not None and j < m.k - 2:
+            return join(
+                (join(c1.d, c2.c, c4.b, c5.a)),
+                (join(c2.d, c3.c, c5.b, c6.a)),
+                (join(c4.d, c5.c, c7.b, c8.a)),
+                (join(c5.d, c6.c, c8.b, c9.a)),
+            )    
+        else:
+            return join(
+            successor(join(c1, c2, c4, c5), j),
+            successor(join(c2, c3, c5, c6), j),
+            successor(join(c4, c5, c7, c8), j),
+            successor(join(c5, c6, c8, c9), j),
+        )                   
+    return s
+```
+
+
+* **advance(node, n)** find the `n`th successor of a given node. Since we compute any advance step of $2^j$, up to $2^{k-2}$, of a level $k$ node, we can advance by any $n$ by using the binary expansion of $n$ to find the successor. 
+
+```python
+def advance(node, n):        
+    if n==0:
+        return node    
+    
+    # get bits and make sure we've nested deep enough
+    bits = []    
+    while n > 0:
+        bits.append(n & 1)
+        n = n >> 1
+        node = centre(node)        
+    
+    for k, bit in enumerate(reversed(bits)):
+        j = len(bits) - k  - 1        
+        if bit:
+            node = variable_step(node, j)
+    return node
+```
+
+* **ffwd(node, n)** if we just want to simulate as fast as possible, we can use `ffwd` to jump forward as quickly as possible:
+
+```python
+def ffwd(node, n):    
+    for i in range(n):       
+        while (node.k < 3 or node.a.n != node.a.d.d.n or
+                node.b.n != node.b.c.c.n or
+                node.c.n != node.c.b.b.n or
+                node.d.n != node.d.a.a.n):
+                node = centre(node)    
+        node = variable_step(node, None)
+    return node
+```
+
+### Auxiliary routines
+
+We need to be able to pack and unpack data to/from quadtree format. `expand` and `construct` can transform nodes to/from `(x,y)` point lists.
+
+
+* **expand(node, clip=None, level=0)** transform a quadtree into a list of (x,y) cell coordinates that fall inside a given clipping window (e.g. for display). `level` allows us to
+report the average occupancy of quadtree leaves without fully recursing into them.
+
+```python
+def expand(node, x=0, y=0, clip=None, level=0):
+    """Turn a quadtree a list of (x,y,gray) triples 
+    in the rectangle (x,y) -> (clip[0], clip[1]) (if clip is not-None).    
+    If `level` is given, quadtree elements at the given level are given 
+    as a grayscale level 0.0->1.0,  "zooming out" the display."""
+    
+    if node.n==0: # quick zero check
+        return []    
+    size = 2 ** node.k
+    # bounds check
+    if clip is not None:
+        if x + size < clip[0] or x > clip[1] or 
+           y + size < clip[2] or y > clip[3]:
+            return []
+    if node.k == level:
+        # base case: return the gray level of this node
+        gray = node.n / (size ** 2)
+        return [(x >> level, y >> level, gray)] if node.n > 0 else []
+    else:
+        # return all points contained inside this cell
+        offset = size >> 1
+        return (
+            expand(node.a, x=x, y=y, clip=clip, level=level)
+            + expand(node.b, x=x + offset, y=y, clip=clip, level=level)
+            + expand(node.c, x=x, y=y + offset, clip=clip, level=level)
+            + expand(node.d, x=x + offset, y=y + offset, clip=clip, level=level)
+        )        
+```        
+
+* **construct(cells)** convert a set of (x,y) coordinates into a quadtree node by recursively merging blocks together.
+
+```python
+def construct(pt_list):
+    """Turn a list of (x,y) coordinates into a quadtree"""
+    # Force start at (0,0)
+    min_x = min(*[x for x, y in pt_list])
+    min_y = min(*[y for x, y in pt_list])
+    pattern = {(x - min_x, y - min_y): on for x, y in pt_list}
+    k = 0
+    while len(pattern) != 1:
+        # bottom-up construction
+        next_level = {}
+        z = get_zero(k)
+        while len(pattern) > 0:
+            x, y = next(iter(pattern))
+            x_q, y_q = x - (x & 1), y - (y & 1)
+            # read all 2x2 neighbours, removing from those to work through
+            # at least one of these must exist by definition
+            a = pattern.pop((x_q, y_q), z)
+            b = pattern.pop((x_q + 1, y_q), z)
+            c = pattern.pop((x_q, y_q + 1), z)
+            d = pattern.pop((x_q + 1, y_q + 1), z)
+            next_level[x_q >> 1, y_q >> 1] = join(a, b, c, d)
+        # merge at the next level
+        pattern = next_level
+        k += 1
+    return pattern.popitem()[1]
+```
+
+## Testing
+
+Using some utility functions from `lifeparsers.py` to load standard Life patten formats, we can verify that this works:
+
+```python
+    from lifeparsers import autoguess_life_file
+
+    def load_lif(fname):
+        pat, comments = autoguess_life_file(fname)
+        return construct(pat)
+```
+
+```python
+    >>> ffwd(load_lif("lifep/breeder.lif"), 8)
+    (Node k=42, 4398046511104 x 4398046511104, population 25185954567301246087084,
+ 4398046510080)
+```
+
+This took 883ms (!) to compute 4398046510080 generations into the future on my machine. We can inspect the caches:
+
+```python
+    >>> variable_step.cache_info()
+    CacheInfo(hits=504184, misses=52222, maxsize=16777216, currsize=52222)
+```
+
+```python
+    >>> join.cache_info()
+    CacheInfo(hits=561324, misses=52246, maxsize=16777216, currsize=52246)
+```
+
+We can check it is doing the right thing for smaller steps, too:
+
+```python
+pat = load_lif("lifep/gun30.lif")
+show_gray(expand(pat))
+show_gray(expand(advance(centre(centre(pat)), 30)))
+```
+
+
+
 
 
 ## References
