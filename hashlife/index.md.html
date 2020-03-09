@@ -3,13 +3,39 @@
 # Hashlife
 ![-](imgs/header.png)
 
-The [Hashlife algorithm](https://en.wikipedia.org/wiki/Hashlife) was invented by Bill Gosper in [#Gosper1984]. It is a very ingenious algorithm
-and one that has some subtlety in implemention. There are several good explanations on the web, including [Tomas Rokicki's Dr. Dobbs article](https://www.drdobbs.com/jvm/an-algorithm-for-compressing-space-and-t/184406478) 
-and [Jenny Owen's explanation](https://jennyhasahat.github.io/hashlife.html). 
+The [Hashlife algorithm](https://en.wikipedia.org/wiki/Hashlife) was invented by Bill Gosper in [#Gosper1984] to speed up evaluation of the Game of Life using a hierarchical caching method. 
+It is a very ingenious algorithm and one that has some subtlety in implemention. There are several good explanations on the web, including [Tomas Rokicki's Dr. Dobbs article](https://www.drdobbs.com/jvm/an-algorithm-for-compressing-space-and-t/184406478) and [Jenny Owen's explanation](https://jennyhasahat.github.io/hashlife.html). 
+
+## Game of Life algorithms
+
+There are a huge number of clever ways to implement Conway's Game of Life, from the naive grid counting implementation, to [super fast bit-fiddling like Tony Finch's version](http://dotat.at/prog/life/life.html), to algorithms that rewrite GoL as a different 2x2 16-state automata and simulate that instead and only compute four neighbours instead of nine, like [Callahan's algorithm](https://github.com/johnhw/glgol). There are [asynchronous update algorithms](https://www.researchgate.net/publication/222758581_Asynchronous_game_of_life) and, of course, [implementations in the Game of Life itself](https://www.conwaylife.com/wiki/Unit_cell).
+
+If we have a collection of "on" cells as `(x,y)` pairs, a tiny Python program to compute the next state is:
+
+```python
+from collections import Counter
+def life(cells):    
+    ns = Counter([(x+a, y+b) for x,y in cells for a in [-1,0,1] for b in [-1,0,1]])
+    return Counter([p for p in ns if ns[p]==3 or (ns[p]==4 and p in cells)])
+```
+
+This implementation has no limits on universe size, other than memory limitations.
+
+The Game of Life is also easy to write as a convolution of a binary matrix, for example with Scipy:
+
+```python
+from scipy.ndimage import convolve
+k = np.array([1,1,1,1,2,1,1,1,1]).reshape(3,3)
+def life(cells):
+    result = convolve(cells, k, mode="wrap")
+    cells = np.where((result>4) & (result<8), 1, 0) 
+```
+
+This is a very simple form to parallelise, e.g. on the GPU.
 
 ## Purpose
 
-We want to be able to evaluate a cellular automaton quickly, by pre-caching successors to states we have seen before. To make this efficient, we can cache things hierarchically, using a hierarchy over both space and time.
+We want to be able to evaluate a cellular automaton quickly, by pre-caching successors to states we have seen before. To make this efficient, we can cache things hierarchically, in quadtree using a hierarchy over both space and time.
 
 ## Algorithm
 
@@ -74,26 +100,25 @@ We can further split a node into great grandchildren (8x8 grid of great grand ch
 *********************************************************************
 
 
-
 Now we can find a way to split up the grandchildren of a node
 into nine overlapping child-size blocks so that we can compute successors of the size of the grandchildren.
 We then subdivide those successor blocks into great-grandchildren
 (lowercase indicates successor)
 
 *********************************************************************
-*         ╭╌╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╌╮   *
+*         ╭1╌╌╌╌╌╌╌╮             ╭2╌╌╌╌╌╌╮             ╭3╌╌╌╌╌╌╌╮   *
 *AA AB -->╎aad  abc╎    AB BA -->╎abd bac╎   BA BB  -->╎bad  bbc╎   *
 *         ╎    +---╎-------------╎-------╎-------------╎---+    ╎   *
 *AC AD    ╎acb |ada╎    AD BC    ╎adb bca╎   BC BD     ╎bcb| bda╎   *
 *         ╰╌╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╌╯   *
 *              |                                           |        *
-*         ╭╌╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╌╮   *
+*         ╭4╌╌╌╌╌╌╌╮             ╭5╌╌╌╌╌╌╮             ╭6╌╌╌╌╌╌╌╮   *
 *AC AD -->╎acd |adc╎    AD BC -->╎add bcc╎   BC BD  -->╎bcd| bdc╎   *
 *         ╎    |   ╎             ╎       ╎             ╎   |    ╎   *
 *CA CB    ╎cab |cba╎    CB DA    ╎cbb daa╎   DA DB     ╎dab| dba╎   *
 *         ╰╌╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╯             ╰╌╌╌╌╌╌╌╌╯   *
 *              |                                           |        *
-*         ╭╌╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╮             ╭╌╌╌╌╌╌╌╌╮   *
+*         ╭7╌╌╌╌╌╌╌╮             ╭8╌╌╌╌╌╌╮             ╭9╌╌╌╌╌╌╌╮   *
 *CA CB -->╎cad |cbc╎    CB DA -->╎cbd dac╎   DA DB  -->╎dad| dbc╎   *
 *CC CD    ╎    +---╎-------------╎-------╎-------------╎---+    ╎   *
 *         ╎ccb  cda╎    CD DC    ╎cdb dca╎   DC DD     ╎dcb  dda╎   *
@@ -105,15 +130,34 @@ Finally, we can select from those great-grandchildren sized
 successor blocks the "inner" parts to make up one full child-sized successor
 (a 4x4 block of great-grandchild successors)
 
-******************************************
-*   +-----------------+                  *
-*   |ada adb ╎ bca bcb|          +-----+ *
-*   |adc add ╎ bcc bcd|          |ad bc| *
-*   |╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌|       -->|     | *  
-*   |cba cbb ╎ daa dab|          |cb da| *
-*   |cbc cbd ╎ dac dad|          +-----+ *
-*   +-----------------+                  *
-******************************************
+************************************************************************
+*  +-----------------+     +-----------------+                         *
+*  |1:D 2:C | 2:D 3:C|     |ada adb ╎ bca bcb|        +-----+          *
+*  |4:B 5:A | 5:B 6:A|     |adc add ╎ bcc bcd|        |ad bc|      +-+ *
+*  |-----------------| --> |╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌|    --> |     |  --> |N| *  
+*  |4:D 5:C | 5:D 6:C|     |cba cbb ╎ daa dab|        |cb da|      +-+ *
+*  |7:B 8:A | 8:B 9:A|     |cbc cbd ╎ dac dad|        +-----+          *
+*  +-----------------+     +-----------------+                         *
+************************************************************************
+
+To terminate the recursion, at the base level, If we have a $k=2$ 4x4 block, we can compute the 2x2 central successor by iterating over all the 3x3 sub-neighbourhoods of 1x1 cells using the standard Life rule (or any other Moore-neighbourhood binary cellular automaton rule we choose):
+
+*********************************************************
+* +-----------+              |     +------------+
+* |AA  AB  BA | BB           |  AA | AB  BA  BB |
+* |AC  AD  BC | BD  --> ad   |  AC | AD  BC  BD | --> bc
+* |CA  CB  DA | DB           |  CA | CB  DA  DB |
+* +-----------+              |     +------------+
+* CC   CD   DC  DD           |  CC   CD  DC  DD
+*----------------------------+------------------------------
+*  AA  AB  BA  BB            |  AA   AB  BA  BB 
+* +------------+             |     +------------+
+* | AC  AD  BC | BD          |  AC | AD  BC  BD | 
+* | CA  CB  DA | DB  --> cb  |  CA | CB  DA  DB | --> da
+* | CC  CD  DC | DD          |  CC | CD  DC  DD |
+* +------------+             |     +------------+
+**********************************************************
+
 
 
 ## Levels
@@ -131,7 +175,8 @@ It doesn't matter much if the basic Life algorithm is slow. We can use basic bru
 
 ## Datastructures
 
-* A **quadtree** `qtree` representing the state of the world at step $t$. Each element is a node `node(k, a, b, c, d, next_node)`, where `next_node` is a reference to the successor of this cell.
+* A **quadtree** `qtree` representing the state of the world at step $t$. Each element is a node `node(k, a, b, c, d, n)`, where `n` is the number of on cells in this node (useful for bookkeeping and display)
+* A **mapping** `node -> successor` that maps known nodes to their successors.
 
 ## Functions
 
@@ -148,7 +193,8 @@ It doesn't matter much if the basic Life algorithm is slow. We can use basic bru
 *                           +----------------+
 *****************************************************
 
-* **join(a,b,c,d)** combine four children at level `k-1` to a new node at level `k`. If this turns out to be a cached node, return the cached node. Otherwise, create a new node, and compute its successor at $t+2^k$.
+* **join(a,b,c,d)** combine four children at level `k-1` to a new node at level `k`. If this turns out to be a cached node, return the cached node. Otherwise, create a new node, and add it to the cache.
+
 *********************************************         
 *             +-------+
 *             | A   B |      +-+
@@ -157,7 +203,7 @@ It doesn't matter much if the basic Life algorithm is slow. We can use basic bru
 *             +-------+
 *********************************************         
 
-* **next(node)** return the central successor of a node at time $t+2^k$.
+* **successor(node)** return the central successor of a node at time $t+2^{k-2}$, either from the successor cache, or by the recursive rules set out above (caching the result).
 ******************************************************************************************         
 *             +-----------+             
 *             | A      B  |           .. .. .. ..  
@@ -168,7 +214,13 @@ It doesn't matter much if the basic Life algorithm is slow. We can use basic bru
 *             +-----------+           .. .. .. .. 
 ******************************************************************************************         
 
-* **expand(node, clip=None)** transform a quadtree into a list of point coordinates that fall inside a given clipping window.
+* **expand(node, clip=None)** transform a quadtree into a list of (x,y) cell coordinates that fall inside a given clipping window (e.g. for display).
+
+* **construct(cells)** convert a set of (x,y) coordinates into a quadtree by recursively merging blocks together.
+
+* **advance(node, n)** find the `n`th successor of a given node. Since we compute the $2^{k-2}$th successor of a level $k$ node, we can advance by any $n$ by
+using the binary expansion of $n$ to find the successor. For example, a 64x64, $k=6$ node can be advanced 9 generations by advancing each $k=5$ node by 8 generations and each $k=2$ by one generation.
+
 
 ## References
 
