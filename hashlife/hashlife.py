@@ -222,7 +222,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     ## utility to show a point collection as an image in Matplotlib
-    def show_gray(pts):
+    def render_img(pts):
         pts = np.array(pts)
         pts[:, 0] -= np.min(pts[:, 0])
         pts[:, 1] -= np.min(pts[:, 1])
@@ -232,16 +232,25 @@ if __name__ == "__main__":
             grays[int(y), int(x)] = g
 
         plt.figure(figsize=(20, 20))
-        plt.imshow(grays)
+        plt.imshow(grays, cmap='bone')
         plt.axis("off")
 
     ## test the Gosper glider gun
     pat = load_lif("lifep/gun30.LIF")
     pat = load_lif("lifep/gun30.lif")
-    show_gray(expand(pat))
+    render_img(expand(pat))
     plt.savefig("imgs/gun30_0.png", bbox_inches="tight")
-    show_gray(expand(advance(centre(centre(pat)), 30)))
-    plt.savefig("imgs/gun30_30.png", bbox_inches="tight")
-    show_gray(expand(advance(centre(centre(pat)), 120)))
-    plt.savefig("imgs/gun30_120.png", bbox_inches="tight")
+    render_img(expand(advance(centre(centre(pat)), 30)))
+    plt.savefig("imgs/gun120_30.png", bbox_inches="tight")
+    
+
+    render_img(expand(advance(centre(centre(pat)), 120), level=0))
+    plt.savefig("imgs/gun30_120_0.png", bbox_inches="tight")
+    render_img(expand(advance(centre(centre(pat)), 120), level=1))
+    plt.savefig("imgs/gun30_120_1.png", bbox_inches="tight")
+    render_img(expand(advance(centre(centre(pat)), 120), level=2))
+    plt.savefig("imgs/gun30_120_2.png", bbox_inches="tight")
+    render_img(expand(advance(centre(centre(pat)), 120), level=3))
+    plt.savefig("imgs/gun30_120_3.png", bbox_inches="tight")
+
 
