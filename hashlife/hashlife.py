@@ -217,13 +217,17 @@ def advance(node, n):
 
 if __name__ == "__main__":
     from lifeparsers import autoguess_life_file
+    import time
 
     # run the breeder forward many generations
     def load_lif(fname):
         pat, comments = autoguess_life_file(fname)
         return construct(pat)
 
-    print(ffwd(load_lif("lifep/breeder.lif"), 32))
+    init_t = time.perf_counter()
+    print(ffwd(load_lif("lifep/breeder.lif"), 64))
+    t = time.perf_counter() - init_t
+    print(f"Computation took {t*1000.0:.1f}ms")
     print(successor.cache_info())
     print(join.cache_info())
 

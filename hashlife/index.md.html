@@ -188,11 +188,11 @@ def centre(m):
 * **life_4x4(node)** return the next generation of a $k=2$ (i.e. 4x4) cell. To terminate the recursion, at the base level, if we have a $k=2$ 4x4 block, we can compute the 2x2 central successor by iterating over all the 3x3 sub-neighbourhoods of 1x1 cells using the standard Life rule (or any other Moore-neighbourhood binary cellular automaton rule we choose):
 
 *********************************************************
-* +-----------+              |     +------------+
-* |AA  AB  BA | BB           |  AA | AB  BA  BB |
-* |AC  AD  BC | BD  --> ad   |  AC | AD  BC  BD | --> bc
-* |CA  CB  DA | DB           |  CA | CB  DA  DB |
-* +-----------+              |     +------------+
+* +------------+             |     +------------+
+* | AA  AB  BA | BB          |  AA | AB  BA  BB |
+* | AC  AD  BC | BD  --> ad  |  AC | AD  BC  BD | --> bc
+* | CA  CB  DA | DB          |  CA | CB  DA  DB |
+* +------------+             |     +------------+
 * CC   CD   DC  DD           |  CC   CD  DC  DD
 *----------------------------+------------------------------
 *  AA  AB  BA  BB            |  AA   AB  BA  BB 
@@ -546,21 +546,20 @@ Using some utility functions from `lifeparsers.py` to load standard Life patten 
 ```
 
 ```python
-    >>> ffwd(load_lif("lifep/breeder.lif"), 8)
-    (Node k=42, 4398046511104 x 4398046511104, population 25185954567301246087084,
- 4398046510080)
+    >>> ffwd(load_lif("lifep/breeder.lif"), 64)
+    (Node k=74, 18889465931478580854784 x 18889465931478580854784, population 464598858302721315414285904656952238927788, 18889465931478580853760)
 ```
 
-This took 883ms (!) to compute 4,398,046,510,080 generations of the [original breeder](https://conwaylife.com/wiki/Breeder_1) on my machine. We can inspect the caches:
+This took 1139ms (!) to compute 18,889,465,931,478,580,853,760 generations of the [original breeder](https://conwaylife.com/wiki/Breeder_1) on my machine. We can inspect the caches:
 
 ```python
     >>> successor.cache_info()
-    CacheInfo(hits=504184, misses=52222, maxsize=16777216, currsize=52222)
+    CacheInfo(hits=673144, misses=66334, maxsize=16777216, currsize=66334)
 ```
 
 ```python
     >>> join.cache_info()
-    CacheInfo(hits=561324, misses=52246, maxsize=16777216, currsize=52246)
+    CacheInfo(hits=744684, misses=66358, maxsize=16777216, currsize=66358)
 ```
 
 We can check it is doing the right thing for smaller steps, too:
