@@ -16,6 +16,7 @@ class Node(_Node):
 on = Node(0, None, None, None, None, 1, 1)
 off = Node(0, None, None, None, None, 0, 0)
 
+mask = (1<<63)-1
 
 @lru_cache(maxsize=2 ** 24)
 def join(a, b, c, d):
@@ -27,7 +28,7 @@ def join(a, b, c, d):
         + 3758991985019 * b.hash
         + 8973110871315 * c.hash
         + 4318490180473 * d.hash
-    ) & ((1 << 63) - 1)
+    ) & mask
     return Node(a.k + 1, a, b, c, d, n, nhash)
 
 
@@ -140,7 +141,7 @@ def expand(node, x=0, y=0, clip=None, level=0):
         gray = node.n / (size ** 2)
         return [(x >> level, y >> level, gray)] if node.n > 0 else []
     else:
-        # return all points contained inside this cell
+        # return all points contained inside this node
         offset = size >> 1
         return (
             expand(node.a, x=x, y=y, clip=clip, level=level)
@@ -163,21 +164,34 @@ def print_points(points):
         print("*", end="")
 
 
+def is_padded(node):
+    return  (node.a.n == node.a.d.d.n
+            and node.b.n == node.b.c.c.n
+            and node.c.n == node.c.b.b.n
+            and node.d.n == node.d.a.a.n)
+
+def inner(node):
+    return join(node.a.d, node.b.c, node.c.b, node.d.a)
+
+def crop(node):
+    if node.k <=3 or not is_padded(node):
+        return node
+    else:
+        return crop(inner(node))
+
+def pad(node):
+    if node.k <= 3 or not is_padded(node):
+        return pad(centre(node))
+    else:
+        return node
+    
 def ffwd(node, n):
     gens = 0
     for i in range(n):
-        while (
-            node.k < 3
-            or node.a.n != node.a.d.d.n
-            or node.b.n != node.b.c.c.n
-            or node.c.n != node.c.b.b.n
-            or node.d.n != node.d.a.a.n
-        ):
-            node = centre(node)
+        node = pad(node)    
         gens += 1 << (node.k - 2)
         node = successor(node)
     return node, gens
-
 
 def advance(node, n):
     if n == 0:
@@ -191,19 +205,8 @@ def advance(node, n):
         j = len(bits) - k - 1
         if bit:
             node = successor(node, j)
-    return node
+    return crop(node)
 
-
-def warmup():
-    from itertools import product
-
-    # pre-generate all 4x4 successors
-    def product_tree(pieces):
-        return [join(a, b, c, d) for a, b, c, d in product(pieces, repeat=4)]
-
-    boot_2x2 = product_tree([on, off])
-    boot_4x4 = product_tree(boot_2x2)
-    [successor(p, 1) for p in boot_4x4]
 
 
 if __name__ == "__main__":
