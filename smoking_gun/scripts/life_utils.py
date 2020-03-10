@@ -24,6 +24,13 @@ import os, re, textwrap
 from collections import Counter as counter
 import numpy as np
 
+from scipy.ndimage import convolve
+k = np.array([1,1,1,1,2,1,1,1,1]).reshape(3,3)
+
+def life_numpy(cells):
+    result = convolve(cells, k, mode="wrap")
+    return (result>4) & (result<8)
+
 
 def to_numpy(pos):
     """Convert a list of (x,y) positions to a (dense) NumPy array"""
@@ -133,6 +140,7 @@ def to_rle(pts):
     flush_stars()
     out.append("!")
     return "".join(out), (max_x - min_x, max_y - min_y)
+
 
 
 def write_rle(fname, pts, comments=[]):
