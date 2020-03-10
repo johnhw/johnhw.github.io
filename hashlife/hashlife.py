@@ -18,7 +18,6 @@ off = Node(0, None, None, None, None, 0, 0)
 
 mask = (1 << 63) - 1
 
-
 @lru_cache(maxsize=2 ** 24)
 def join(a, b, c, d):
     n = a.n + b.n + c.n + d.n
@@ -140,7 +139,7 @@ def expand(node, x=0, y=0, clip=None, level=0):
     if node.k == level:
         # base case: return the gray level of this node
         gray = node.n / (size ** 2)
-        return [(x >> level, y >> level, gray)] if node.n > 0 else []
+        return [(x >> level, y >> level, gray)]
     else:
         # return all points contained inside this node
         offset = size >> 1

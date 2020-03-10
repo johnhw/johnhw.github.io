@@ -377,7 +377,7 @@ def successor(m):
     return s
 ```
 
-However, if we wanted to compute some smaller jump forward than $2^{k-2}$, there is no way to do so directly. Adding a parameter `j` allows a skip by any power of 2 smaller or equal to $2^{k-2}$.
+However, if we wanted to compute some smaller jump forward than $2^{k-2}$, there is no way to do so directly. Adding a parameter `j` allows a skip by any power of 2 smaller or equal to $2^{k-2}$, to give our final implementation.
 
 ```python
 @lru_cache(maxsize=2 ** 24)
@@ -424,14 +424,14 @@ That's it! That's all the essential code to implement Hashlife. There are some u
 
 ### Advancing time
 
-* **advance(node, n)** find the `n`th successor of a given node. Since we compute any advance step of $2^j$, up to $2^{k-2}$, of a level $k$ node, we can advance by any $n$ by using the binary expansion of $n$ to find the successor. 
+* **advance(node, n)** find the `n`th successor of a given node. Since we compute any advance step of $2^j$, up to $2^{k-2}$, of a level $k$ node, we can advance by any $n$ by using the binary expansion of $n$ to find the successor. We first pad the node with zeros so that we can a jump at least $n$ steps ahead.
 
 ```python
 def advance(node, n):        
     if n==0:
         return node    
     
-    # get binary expansion and make sure we've nested deep enough
+    # get binary expansion and make sure we've padded enough
     bits = []    
     while n > 0:
         bits.append(n & 1)
@@ -486,7 +486,7 @@ def expand(node, x=0, y=0, clip=None, level=0):
     if node.k == level:
         # base case: return the gray level of this node
         gray = node.n / (size ** 2)
-        return [(x >> level, y >> level, gray)] if node.n > 0 else []
+        return [(x >> level, y >> level, gray)]
 
     else:
         # return all points contained inside this node
