@@ -273,9 +273,37 @@ We can further split a node into great grandchildren (8x8 grid of great grand ch
 *********************************************************************
 
 
-Now we can find a way to split up the grandchildren of a node
-into nine overlapping child-size blocks so that we can compute successors of the size of the grandchildren.
-We then subdivide those successor blocks into great-grandchildren
+Taking for example the `[AA AB AC AD]` block, we can find the successor
+`[AAD ABC ACB ADA]`, and keep only the result `[ADA]`, as shown below.
+
+
+*********************************************************************
+*┌─────────────────────────────┐
+*│ AAA   AAB     ABA     ABB   │     BAA     BAB     BBA     BBB     
+*│     ╔══════════════╗        │
+*│ AAC ║ AAD     ABC  ║  ABD   │     BAC     BAD     BBC     BBD     
+*│     ║              ║        │                                    
+*│     ║      +-------║--------│-----------------+                   
+*│ ACA ║ ACB  | ADA   ║  ADB   │     BCA     BCB |   BDA     BDB     
+*│     ╚══════════════╝        │                 | 
+*│ ACC   ACD  |  ADC     ADD   │     BCC     BCD |   BDC     BDD     
+*└─────────────────────────────┘                 |                   
+*             |                                  |
+*             |                                  |                   
+*  CAA   CAB  |  CBA     CBB         DAA     DAB |   DBA     DBB     
+*             |                                  |
+*  CAC   CAD  |  CBC     CBD         DAC     DAD |   DBC     DBD     
+*             +----------------------------------+                   
+*                                                                   
+*  CCA   CCB     CDA     CDB         DCA     DCB     DDA     DDB     
+*
+*  CCC   CCD     CDC     CDD         DCC     DCD     DDC     DDD     
+*  
+*********************************************************************
+
+
+Now we have a way to split up the grandchildren of a node
+into nine overlapping child-size blocks so that we can compute successors of the size of the grandchildren. We then subdivide those successor blocks into great-grandchildren
 (lowercase indicates successor)
 
 *********************************************************************
