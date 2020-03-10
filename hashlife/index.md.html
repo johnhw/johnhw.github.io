@@ -16,7 +16,7 @@ I'll assume you are familiar with the [Game of Life](https://en.wikipedia.org/wi
 There are a huge number of clever ways to implement Conway's Game of Life, including:
 
 * the naive grid counting implementation with 2D arrays, 
-* super fast bit-fiddling like [Tony Finch's version](http://dotat.at/prog/life/life.html) or [Tomas Rockiki's various versions](https://github.com/rokicki/lifealg)
+* super fast bit-fiddling like [Tony Finch's version](http://dotat.at/prog/life/life.html) or [Tomas Rokicki's various versions](https://github.com/rokicki/lifealg)
 * [Accelerated GPU-based algorithms](http://www.marekfiser.com/Projects/Conways-Game-of-Life-on-GPU-using-CUDA)
 * algorithms that rewrite GoL as a different 2x2 16-state automata and simulate that instead [like Callahan's algorithm](https://github.com/johnhw/glgol). 
 * [asynchronous update algorithms](https://www.researchgate.net/publication/222758581_Asynchronous_game_of_life) 
@@ -42,7 +42,7 @@ k = np.array([1,1,1,1,2,1,1,1,1]).reshape(3,3)
 
 def life(cells):
     result = convolve(cells, k, mode="wrap")
-    return np.where((result>4) & (result<8), 1, 0) 
+    return (result>4) & (result<8)
 ```
 This is a very simple form to parallelise, e.g. on the GPU, but requires storing a dense matrix and computing an update for every allocated cell (no skipping blank space).
 
@@ -210,11 +210,11 @@ def life(a, b, c, d, E, f, g, h, i):
     return on if (E.n and outer == 2) or outer == 3 else off
 
 def life_4x4(m):
-    na = life(m.a.a, m.a.b, m.b.a, m.a.c, m.a.d, m.b.c, m.c.a, m.c.b, m.d.a)  
-    nb = life(m.a.b, m.b.a, m.b.b, m.a.d, m.b.c, m.b.d, m.c.b, m.d.a, m.d.b)  
-    nc = life(m.a.c, m.a.d, m.b.c, m.c.a, m.c.b, m.d.a, m.c.c, m.c.d, m.d.c)  
-    nd = life(m.a.d, m.b.c, m.b.d, m.c.b, m.d.a, m.d.b, m.c.d, m.d.c, m.d.d)  
-    return join(na, nb, nc, nd)
+    ad = life(m.a.a, m.a.b, m.b.a, m.a.c, m.a.d, m.b.c, m.c.a, m.c.b, m.d.a)  
+    bc = life(m.a.b, m.b.a, m.b.b, m.a.d, m.b.c, m.b.d, m.c.b, m.d.a, m.d.b)  
+    cb = life(m.a.c, m.a.d, m.b.c, m.c.a, m.c.b, m.d.a, m.c.c, m.c.d, m.d.c)  
+    da = life(m.a.d, m.b.c, m.b.d, m.c.b, m.d.a, m.d.b, m.c.d, m.d.c, m.d.d)  
+    return join(ab, bc, cb, da)
 
 ```
 
@@ -248,7 +248,7 @@ we want to compute the successor of the central region, that is what will be in:
 
 in the future (lowercase to indicate the "successor of"). 
 
-We can further split a node into great grandchildren (8x8 grid of great grand children)
+We can further split a node into great grandchildren (8x8 grid of great-grandchildren)
 
 *********************************************************************
 * AAA   AAB     ABA     ABB         BAA     BAB     BBA     BBB     *
