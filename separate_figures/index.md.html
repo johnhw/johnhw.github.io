@@ -5,14 +5,13 @@
 
 Some academic journals, like [PLoS One](https://journals.plos.org/plosone/s/figures), require that you submit a final document as a single self-contained LaTeX file. All figures need to be submitted as separate image files, with any figures having multiple panels merged into a single image.
 
-If you have a paper with a lot of `\include`s and figures, this is a pain to do by hand. It is possible to do this automatically.
+If you have a complex LaTeX source with a lot of `\include`s and figures, this is a pain to do by hand. It is possible to do this automatically.
 
 ## Merging the file into one `.tex` file
 
-To make sure the bibliography is included in the source, change your source to replace `\bibliography{...}` with 
-`\input{paper.bbl}`.
+Assume your paper is called `paper.tex` and currently has many `\include` or `\input` elements (e.g. `\include{intro.tex}`, `\include{theory.tex}`, ...)
 
-Then:
+First:
 
 ```
 latex paper.tex
@@ -21,7 +20,11 @@ bibtex paper.tex
 
 to generate `paper.bbl`. 
 
-Use [latexpand](https://ctan.org/pkg/latexpand?lang=en) to include all `\input{}` and `\include{}` files, as well as the bibliography into one file.
+
+To make sure the bibliography is included in the source, change your source of `paper.tex` to replace `\bibliography{...}` with 
+`\input{paper.bbl}`.
+
+Then use [latexpand](https://ctan.org/pkg/latexpand?lang=en) to include all `\input{}` and `\include{}` files, as well as the bibliography into one file.
 
 ```
 latexpand paper.tex > paper_merged.tex
@@ -33,7 +36,7 @@ latexpand paper.tex > paper_merged.tex
 
 The following is based on [this StackOverflow answer by John Kormylo](https://tex.stackexchange.com/questions/423109/export-each-figure-as-a-separate-pdf-file).
 
-We can use the `endfloat` package to split out all floats into a separate file. In the preamble, just after `\documentclass`, add:
+We can use the `endfloat` package to split out all floats into a separate file. In the preamble of `paper_merged.tex`, just after `\documentclass`, add:
 
 ```latex
 \usepackage{endfloat}
@@ -48,7 +51,7 @@ We can use the `endfloat` package to split out all floats into a separate file. 
 Run `pdflatex paper_merged` and you will get a new file `paper_merged.fff` that has all the code for floating figures in it.
 
 ### The figure document
-Create a new document `figures_separated.tex` with the following contents:
+Create a new, blank document `figures_separated.tex` with the following contents:
 
 ```latex
 \documentclass[multi=figure]{standalone}
@@ -64,7 +67,7 @@ Create a new document `figures_separated.tex` with the following contents:
 \let\efloatseparator=\empty
 \newcommand{\titlecaption}[2]{}
 \begin{document}
-\input{v2_paper.fff}
+\input{paper_merged.fff}
 \end{document}
 ```
 
@@ -78,16 +81,19 @@ pdflatex separated_figures.tex
 to produce `separated_figures.pdf` which has each figure as a separate page.
 
 #### Making TIFFs
-PLoS One recommends all figures to be submitted as TIFF (unfortunately EPS is the only vector format PLoS support and it is not recommended...). [imagemagick](https://imagemagick.org/script/download.php) can convert this multi-page PDF to individual TIFF files in one go. 
+PLoS One recommends all figures to be submitted as TIFF (unfortunately EPS is the only vector format PLoS support and it is not recommended...). [imagemagick](https://imagemagick.org/script/download.php) can convert this multi-page PDF to individual TIFF files in one go -- if you configure it correctly! 
+
 
 * Create a directory called `output_images`
 
+* Then, run:
 ```
 magick convert -density 700 -scene 1 -background white -alpha remove \ 
        -alpha off  separated_figures.pdf  "output_figures/fig%d.tiff"
 ```
 
 * on Windows, use `%%d` instead of `%d` to avoid shell escaping
+* If you don't have [https://www.ghostscript.com/](GhostScript) installed, you need to install this first.
 
 You should now have one TIFF file per figure, named `output_images/fig1.tiff` etc. You may need to adjust `density` if the images are too high or too low resolution -- `density 700` looked about right for my configuration.
 

@@ -21,12 +21,12 @@ There are a huge number of clever ways to implement Conway's Game of Life, inclu
 * the naive grid counting implementation with 2D arrays, 
 * super fast bit-fiddling like [Tony Finch's version](http://dotat.at/prog/life/life.html) or [Tomas Rockiki's various versions](https://github.com/rokicki/lifealg)
 * [Accelerated GPU-based algorithms](http://www.marekfiser.com/Projects/Conways-Game-of-Life-on-GPU-using-CUDA)
-* algorithms that rewrite GoL as a different 2x2 16-state automata and simulate that instead and only compute four neighbours instead of nine, [like Callahan's algorithm](https://github.com/johnhw/glgol). 
+* algorithms that rewrite GoL as a different 2x2 16-state automata and simulate that instead [like Callahan's algorithm](https://github.com/johnhw/glgol). 
 * [asynchronous update algorithms](https://www.researchgate.net/publication/222758581_Asynchronous_game_of_life) 
 * and, of course, [implementations in the Game of Life itself](https://www.conwaylife.com/wiki/Unit_cell).
 
 ### Simple implementations
-Ignoring the complexities of loading patterns and display output, the basic algorithms can be very simple indeed. If we have a collection of "on" cells stored as `(x,y)` pairs, a tiny Python program to compute the next generation is:
+Ignoring the complexities of loading patterns and display output, the basic algorithm for the GoL can be very simple indeed. If we have a collection of "on" cells stored as `(x,y)` pairs, a tiny Python program to compute the next generation is:
 
 ```python
 from collections import Counter
@@ -47,7 +47,7 @@ def life(cells):
     result = convolve(cells, k, mode="wrap")
     return np.where((result>4) & (result<8), 1, 0) 
 ```
-This is a very simple form to parallelise, e.g. on the GPU, but requires storing a dense matrix and updating every cell (no skipping blank space).
+This is a very simple form to parallelise, e.g. on the GPU, but requires storing a dense matrix and computing an update for every allocated cell (no skipping blank space).
 
 ### Hashlife
 Hashlife is designed to be able to run a cellular automaton quickly, by pre-caching successors to states have seen before. To make this efficient, we cache things in a quadtree using a hierarchy over both space and time. This allows Hashlife to, for example, compute the state of repetitive patterns **trillions** of generations in the future and easily store the result.
@@ -489,14 +489,14 @@ def expand(node, x=0, y=0, clip=None, level=0):
         return [(x >> level, y >> level, gray)] if node.n > 0 else []
 
     else:
-        # return all points contained inside this cell
+        # return all points contained inside this node
         offset = size >> 1
         return (
             expand(node.a, x, y, clip, level)
             + expand(node.b, x + offset, y, clip, level)
             + expand(node.c, x, y + offset, clip, level)
             + expand(node.d, x + offset, y + offset, clip, level)
-        )        
+        )       
 ```        
 
 * **construct(cells)** convert a set of (x,y) coordinates into a quadtree node by recursively merging blocks together.

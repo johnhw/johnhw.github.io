@@ -16,7 +16,8 @@ class Node(_Node):
 on = Node(0, None, None, None, None, 1, 1)
 off = Node(0, None, None, None, None, 0, 0)
 
-mask = (1<<63)-1
+mask = (1 << 63) - 1
+
 
 @lru_cache(maxsize=2 ** 24)
 def join(a, b, c, d):
@@ -144,10 +145,10 @@ def expand(node, x=0, y=0, clip=None, level=0):
         # return all points contained inside this node
         offset = size >> 1
         return (
-            expand(node.a, x=x, y=y, clip=clip, level=level)
-            + expand(node.b, x=x + offset, y=y, clip=clip, level=level)
-            + expand(node.c, x=x, y=y + offset, clip=clip, level=level)
-            + expand(node.d, x=x + offset, y=y + offset, clip=clip, level=level)
+            expand(node.a, x, y, clip, level)
+            + expand(node.b, x + offset, y, clip, level)
+            + expand(node.c, x, y + offset, clip, level)
+            + expand(node.d, x + offset, y + offset, clip, level)
         )
 
 
@@ -165,33 +166,40 @@ def print_points(points):
 
 
 def is_padded(node):
-    return  (node.a.n == node.a.d.d.n
-            and node.b.n == node.b.c.c.n
-            and node.c.n == node.c.b.b.n
-            and node.d.n == node.d.a.a.n)
+    return (
+        node.a.n == node.a.d.d.n
+        and node.b.n == node.b.c.c.n
+        and node.c.n == node.c.b.b.n
+        and node.d.n == node.d.a.a.n
+    )
+
 
 def inner(node):
     return join(node.a.d, node.b.c, node.c.b, node.d.a)
 
+
 def crop(node):
-    if node.k <=3 or not is_padded(node):
+    if node.k <= 3 or not is_padded(node):
         return node
     else:
         return crop(inner(node))
+
 
 def pad(node):
     if node.k <= 3 or not is_padded(node):
         return pad(centre(node))
     else:
         return node
-    
+
+
 def ffwd(node, n):
     gens = 0
     for i in range(n):
-        node = pad(node)    
+        node = pad(node)
         gens += 1 << (node.k - 2)
         node = successor(node)
     return node, gens
+
 
 def advance(node, n):
     if n == 0:
@@ -206,7 +214,6 @@ def advance(node, n):
         if bit:
             node = successor(node, j)
     return crop(node)
-
 
 
 if __name__ == "__main__":
@@ -235,7 +242,7 @@ if __name__ == "__main__":
             grays[int(y), int(x)] = g
 
         plt.figure(figsize=(20, 20))
-        plt.imshow(grays, cmap='bone')
+        plt.imshow(grays, cmap="bone")
         plt.axis("off")
 
     ## test the Gosper glider gun
@@ -245,7 +252,6 @@ if __name__ == "__main__":
     plt.savefig("imgs/gun30_0.png", bbox_inches="tight")
     render_img(expand(advance(centre(centre(pat)), 30)))
     plt.savefig("imgs/gun120_30.png", bbox_inches="tight")
-    
 
     render_img(expand(advance(centre(centre(pat)), 120), level=0))
     plt.savefig("imgs/gun30_120_0.png", bbox_inches="tight")
@@ -255,5 +261,4 @@ if __name__ == "__main__":
     plt.savefig("imgs/gun30_120_2.png", bbox_inches="tight")
     render_img(expand(advance(centre(centre(pat)), 120), level=3))
     plt.savefig("imgs/gun30_120_3.png", bbox_inches="tight")
-
 
