@@ -54,17 +54,27 @@ Hashlife is very fast for periodic patterns run for long stretches. It is not ef
 ## Hashlife algorithm
 We operate on a quadtree, where each node has four children, each of which has four children, etc, until we reach leaf nodes:
 
-***************
-*  +---------+   
-*  | +-+ +-+ |
-*  | |A| |B| |   
-*  | +-+ +-+ |
-*  |         |
-*  | +-+ +-+ |
-*  | |C| |D| |
-*  | +-+ +-+ | 
-*  +---------+   
-***************
+************************************
+* 
+* +------------------+-------
+* | A                |  B ...
+* |   +-----------+  |
+* |   |  A    B   |  | 
+* |   | +--+ +--+ |  |
+* |   | |AB| |AB| |  |   
+* |   | |CD| |CD| |  |    
+* |   | +--+ +--+ |  |
+* |   |           |  |
+* |   |  C    D   |  |
+* |   | +--+ +--+ |  |
+* |   | |AB| |AB| |  |
+* |   | |CD| |CD| |  |
+* |   | +--+ +--+ |  |
+* |   +-----------+  |
+* |                  |
+* +------------------+--------
+* | C  ...           | D ...
+************************************
 
 Leaf nodes are individual cells, either `on` or `off`. 
 
