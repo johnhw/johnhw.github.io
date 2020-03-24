@@ -1,19 +1,17 @@
 <meta charset="utf-8"> 
 
-# ASCII knots to 3d renderings
+# ASCII knots to 3D renderings via Blender
 ![-](imgs/header.png width="60%")
 
 Knots are a pain to model in 3D. I mean "knots"  as in the functional objects used to bind materials, like those [Ashley wrote about](https://en.wikipedia.org/wiki/The_Ashley_Book_of_Knots), rather than mathematical knots, for which there are [some nice tools available](https://knotplot.com/) to produce renderings. 
 
 Such knots are also a pain to notate consistently in a form that can be shared over email or chat -- people often end up discussing knots in terms of their Ashley numbers (**ABOK #1010** is the Bowline, for example), which is fine if you (a) have a copy of the Ashley Book of Knots handy and (b) the knot is actually listed there. Many of the interesting knots noted at the [Notable Knot Index](https://notableknotindex.webs.com/), for example don't fall into that category. While the Notable Knot Index has nice illustrations, these are tricky to produce by hand and of course show only a single perspective on the construction.
 
-I've devised a simple notation (knotation?) for representing basic knots, and a plugin for Blender that will parse this notation and generate 3D models automatically. It only generates a *starting point* for modelling,
+I've devised a simple notation (knotation) for representing basic knots, and a plugin for Blender that will parse this notation and generate 3D models automatically. It only generates a *starting point* for modelling,
 with the correct topology and approximate geometry, but it is a useful helper.
 
 ## Some example renderings
 ![Examples of knots rendered from ASCII diagrams]("imgs/examples.png")
-
-
 
 ## Blender plugin
 I have created a Blender plugin (2.7x/2.8x) to create 3D meshes of knots from these ASCII art descriptions. This is a simple plugin,
