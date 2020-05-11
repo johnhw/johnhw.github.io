@@ -16,7 +16,9 @@ A simple abstract model of a "marginally usable" interface is a pair of buttons.
 
 ![An interface as a pair of noisy buttons. $f_0$ and $f_1$ are the probability that button 0 or button 1, respectively, get randomly inverted. For the moment, we assume $f_0=f_1=f$](imgs/button_model.png width="70%")
 
-A non-invasive EEG-based BCI, like one which classifies changes in rhythms in the motor cortex when imagining movement, fits this model. You imagine wiggling your left hand, and the weak neural signals associated with this imaginary movement are picked up by electrodes on the scalp and eventually the BCI registers that you "hit the left button", with some probability. An interface like this might produce binary decisions with an error rate of 5% for a *"good"* user. But performance varies hugely among different users, and even across one user on different days. Other users might have error rates of the order of 25%. Given that each "noisy button push" might take a second or more to produce, it is imperative to have efficient ways of error free control. The problem is how to optimally decode the noise-corrupted inputs to recover user intention.
+A non-invasive EEG-based BCI, like one which classifies changes in rhythms in the motor cortex when imagining movement, fits this model. You imagine wiggling your left hand, and the weak neural signals associated with this imaginary movement are picked up by electrodes on the scalp and eventually the BCI registers that you "hit the left button", with some probability. 
+
+An interface like this might produce binary decisions with an error rate of 5% for a *"good"* user. But performance varies hugely among different users, and even across one user on different days. Other users might have error rates of the order of 25%. Given that each "noisy button push" might take a second or more to produce, it is imperative to have efficient ways of error free control. The problem is how to optimally decode the noise-corrupted inputs to recover user intention.
 
 ### A noisy guessing game demo
 We can see this as a game played between a user and a system:
@@ -290,9 +292,9 @@ def demo_elicit(m_i):
     return  m_i < 0.71875 
 ```
 
-    
+
 # References
-* [#Williamson2020]: 
+* [#Williamson2020]: Williamson, J. et al. 'Efficient human-machine control with asymmetric marginal reliability input devices', PLoS ONE (2020)
 * [#Shannon1948]:Shannon, Claude E. ‘A Mathematical Theory of Communication’. Bell System Technical Journal 27, no. 3 (1948): 379–423.
 * [#Horstein1963]: M. Horstein, ‘Sequential transmission using noiseless feedback’, IEEE Transactions on Information Theory, vol. 9, no. 3, pp. 136–143, 1963.
 * [#ShayevitzFeder2008]: O. Shayevitz and M. Feder, ‘The posterior matching feedback scheme: Capacity achieving and error analysis’, in 2008 IEEE International Symposium on Information Theory, 2008, pp. 900–904.
@@ -305,6 +307,5 @@ def demo_elicit(m_i):
 [GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
 
 <link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
-
-
+<script>window.markdeepOptions = {tocStyle:'none'};</script>
 <!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
