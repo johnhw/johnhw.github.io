@@ -1,0 +1,310 @@
+<meta charset="utf-8"> 
+
+# Errors in interfaces
+This is an introduction to the paper: ["Efficient human-machine control with asymmetric marginal reliability input devices"](http://doi)
+![ ](imgs/header.png)
+
+Most of time, user interfaces have fairly reliable inputs. Small levels of error are tolerable when we have simple correction features like undo. But in some contexts, like in **brain-computer interfaces** input is *very* noisy. This tends to result in a very frustrating user experience, and a variety of correction methods to reduce errors are used. Unfortunately, undo-style correction can be inefficient when controls are really unreliable; standard techniques can result in **correction cascades**. 
+
+## Video
+
+![Watch the video summary.](https://youtu.be/RB-bigdz4Ao)
+
+
+## Just two buttons, and they don't even work right
+A simple abstract model of a "marginally usable" interface is a pair of buttons. We can assume a user can elect to press either button, but there is some probability that the input will be flipped at random because the input device mis-recognises an intention.
+
+![An interface as a pair of noisy buttons. $f_0$ and $f_1$ are the probability that button 0 or button 1, respectively, get randomly inverted. For the moment, we assume $f_0=f_1=f$](imgs/button_model.png width="70%")
+
+A non-invasive EEG-based BCI, like one which classifies changes in rhythms in the motor cortex when imagining movement, fits this model. You imagine wiggling your left hand, and the weak neural signals associated with this imaginary movement are picked up by electrodes on the scalp and eventually the BCI registers that you "hit the left button", with some probability. An interface like this might produce binary decisions with an error rate of 5% for a *"good"* user. But performance varies hugely among different users, and even across one user on different days. Other users might have error rates of the order of 25%. Given that each "noisy button push" might take a second or more to produce, it is imperative to have efficient ways of error free control. The problem is how to optimally decode the noise-corrupted inputs to recover user intention.
+
+### A noisy guessing game demo
+We can see this as a game played between a user and a system:
+
+* I (the user) choose a number $x$ between 0 and 1
+* Then until you (the system) are sure what number I am thinking of:
+    * You get to ask me whether $x$ is greater or less than some number $m_i$ that you choose;
+    * I get to lie, but only at most a fraction $f$ of the time
+
+If it weren't for the lying, the optimal solution -- in terms of the fewest questions to get within some tolerance $\epsilon$ of $x$ -- would be simple bisection. In the input device problem the "lies" become bit flips induced by noise. Horstein's algorithm [#Horstein1963], discussed below, is the (information-theoretic) optimal solution to the noisy version if the "lies" are made randomly. 
+
+#### Demo
+To get a feel for Horstein's algorithm, try the demo:
+
+* In your head, select a number between 0 and 100. 
+* Press the left and right arrows to guide the dividing line to your chosen number (choosing left if the number is to the left of the divider, and so on). 
+* The *Error level* slider sets the random error level; this fraction of your inputs will be flipped (the button will flash red when this happens). 
+* The *Entropy* progress bar shows the information accumulated. When this reaches the end, the system should have converged to the number you were thinking of.
+    * This takes at least $\log_2(100) \approx 6.6$ bits; the decoder is configured to acquire 7.5 bits to account for a margin of error.
+* You can toggle a prior over numbers close to 50 with the *Toggle Prior* button; *Reset* resets the state of the decoder.    
+
+ <div id="pad_table">
+        <table >
+            <tr> <td> </td> <td> <div id="selected"> </div> </td> </td> </tr>
+        <tr>
+            <td><button class="ui-button ui-widget ui-corner-all uictrl" id="decr_button">🞀</button>  </td> 
+            <td> <span class="container" id="container"></span>
+            <td>  <button class="ui-button ui-widget ui-corner-all uictrl" id="incr_button">🞂</button></td>
+            <tr> <td> </td> <td>
+                <div id="lower-controls">
+                <div id="slider" class="uictrl"></div>
+                <div class="uictrl">            
+                        Error level <span id="error_display" class="uictrl">0.0</span>%
+                    </div>
+                <div id="entropy_progressbar">
+                    <div id="entropy-progress-label">Entropy</div>
+                </div>
+                <br> 
+                    <button class="ui-button ui-widget ui-corner-all uictrl" id="reset_button"> ⟳ Reset</button>
+                    <input type="checkbox" name="checkbox-nested-3" id="prior_button">
+                    <label for="prior_button" class="ui-button ui-widget ui-corner-all uictrl"> ◞◠◟ Toggle prior </label>
+                </div>                
+            </td>             
+        </tr>
+        </table>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Comfortaa">
+<link rel="stylesheet" href="demo/jquery-ui.css" type="text/css" charset="utf-8" />
+<link rel="stylesheet" href="demo/style.css" type="text/css" charset="utf-8" />
+<script src="demo/jquery-3.4.1.min.js"></script>
+<script src="demo/jquery-ui.min.js"></script>
+<script src="demo/kinetic-v5.0.1.min.js"></script>
+<script src="demo/interval.js"> </script>
+<script src="demo/selector_line_new.js"> </script>
+
+## Desiderata
+
+Returning to our user abstraction, if I, the user, want to do something useful -- *"start music playing"*, say -- we need a way of mapping noisy button pushes onto UI options. This process should be:
+
+* **Universal**: I shouldn't have to change the way I use the "buttons" when the task or input device changes.
+* **Efficient**: I should need to press as few buttons as possible.
+* **Robust**: the random flipping of inputs shouldn't mean that I ever select the wrong option, or at least the probability of incorrect selection should be small and bounded.
+* **Transparent**: I shouldn't have to remember command sequences or do mental computations; each step needs to be obvious from the display.
+
+### Probabilistic interfaces
+![A probabilistic user interface. The system infers a distribution over intention given evidence from human action detected from sensing.](imgs/brain_inference.png)
+
+Ideally, it would also be **probabilistic**, so that it gives a probability distribution over options. This makes it easier to incorporate prior models about what options I might want, or utility functions about which options are most "valuable" (or dangerous!) in a consistent way. 
+
+Assume we have a collection of UI options denoted $X = {{x_1, x_2, x_3, \dots}}$. I have an **intention** to select a specific $X=x_i$. How can we update the conditional distribution $P(X=x_i|X_{t-1}, Y_t)$, where $Y_t$ is the input from a user (e.g. a BCI signal) at time $t$ and $X_{t-1}$ is the belief distribution at the previous time step (or a prior before we begin interaction)? If we could do that we could then:
+
+* decide on a threshold to trigger actions, e.g. an entropy threshold $H(X)\leq h$ or a maximum a posteriori probability threshold $\max P(X=x_i|X_{t-1}, Y_t) \geq p*$.
+* decide on a rule to choose the target after a specific action, e.g. $\operatorname{argmax}_{i}[P(X)]$ or $\mathbb{E}[U(X_t)]$ where $U$ is a utility function over options.
+
+## What is an interface doing?
+
+![The user interface implicitly providing entropy, channel and line coding via a feedback loop.](imgs/user_interface_flow_new.png)
+
+From an information theory perspective, we can view the human-machine loop as a way of *coding* for a noisy, bandwidth-limited input channel. How can we efficiently and robustly transport intention to system state? We can map common user interface elements onto the standard elements of a communication system:
+
+* **entropy coding** which reduces the bandwidth (the number of coding actions) required by *compressing* information. This includes traditional system like macros which replace repetitive sequences of inputs with shortcuts, or direct entropy coding mechanisms like [Dasher](https://en.wikipedia.org/wiki/Dasher_(software))
+* **channel coding** which protects information from disturbances. In most interfaces, this takes the form of feedback codes that allow **rollback** of state -- backspace or undo. Specific codes are dedicated to reversal of prior inputs. The interfaces we will derive use **compensation** to armour information such that it is robustly transmitted in the presence of any level of error.
+* **line coding** which maps discrete codes from the upper layers into physical changes in the world (e.g. moving a finger) that can be sensed and classified by a system (e.g. registering the closing of a key-switch). This includes mechanisms like spatial mappings (keyboard/touchscreen), cursor control, gesture recognition and motion correlation.
+
+We will focus on developing **channel codes** for low-reliability (high noise) interfaces. And we will explore how **feedback control** allows all of this coding to be done on the system-side, without introducing additional mental demands on the user.
+
+# A robust decoder
+
+There are two general concepts we can apply to build a robust decoder. We can use:
+
+* **feedback** to stabilise the user-system loop in the presence of input noise;
+* **history** to fuse together inputs over a sequence of inputs.
+
+![Asymmetric user interfaces; the input device (feedforward channel) is much more restricted than the display device (feedback channel).](imgs/asymmetry.png)
+
+We often encounter **asymmetric** interfaces, where we have rich, virtually noise-free visual display coupled with a low-bandwidth noisy input device (for example, a low-bandwidth BCI with a high-capacity visual display). This leads us to the question: how can we rebalance the control loop so it leans more heavily on the feedback path? 
+
+Framing this probabilistically, how can we optimally do online probabilistic updates over a distribution over UI options? What input should be elicit from the user via the feedback path, and how should we *decode* this input to update the probability distribution? This is a question of information theory, and Shannon [#Shannon1948] showed that no matter how high the noise level, it is always possible to communicate with arbitrarily low error rates. The question then becomes:
+
+* What code should we use to communicate? Humans can't realistically apply complex codes like Reed-Solomon or LDPC codes; this would violate **transparency**. But we want **efficiency** and **robustness**.
+* How should we represent the coding process in the interface loop? This should be something that is **transparent** and **universal** -- we can bolt it on to any standard interaction task and the operation will be self-explanatory.
+
+
+## Horstein to the rescue
+
+Horstein [#Horstein1963] showed an optimal code for noisy channels with noise-free feedback. This is a kind of **posterior matching feedback code** [#ShayevitzFeder2008] which is provably optimal if the assumptions about noise-free feedback and perfectly known channel properties hold. It is the optimal solution to the noisy guessing game introduced above.
+
+#### History, feedback and assumptions
+
+* The **history** is a stored as a continuous probability distribution which is recursively updated after each input via Bayes' rule. The probability distribution has a simple representation as a piecewise linear cumulative distribution function over the range [0,1]. This is equivalent to dividing up this interval into irregular but contiguous chunks and assigning them different probability.
+
+* The **feedback** involves mapping all of the interface options $x_1, x_2, \dots$ onto the unit interval, then feeding back the current centre of probability mass (the median $m_i$). The user's input then becomes a binary choice -- is my intended target $x_i$ left or right of $m_i$? 
+
+* The **update rule**  modifies the probability distribution such that $m_i$ will converge to the point the user wants **regardless of how noisy the input is**, in the fewest possible number of inputs. 
+
+There are a few key assumptions for this to work:
+
+* **feedback** is noise free and zero cost;
+* **feedforward error levels** (error rate $f$) are perfectly known;
+* **feedforward errors** are random; specifically independent and identically drawn samples from a Bernoulli process.
+ 
+### Horstein's algorithm
+Assume we have an input device like the noisy button, where a user's input is a binary decision: left or right of a dividing line. We assume we want to select one of $N$ options, where for simplicity we can assume $N=2^k$. That means we have to transmit exactly $k$ bits of information from a user's head to the system state to make a selection ($k$ could be fractional, if we want). We will have some residual probability that the decoded symbol is incorrect; we can denote this $e_k$. We can control this error level by asking the user to "confirm" their decision with extra information; this confirmation we denote $\beta$, the number of bits of additional confirmation.
+
+We will have a channel which flips a fraction $f$ of inputs. We configure a decoder by telling it what fraction of flips to expect, $f'$. The Horstein decoder is optimal if $f=f'$. We continue observing inputs from the user until we are sufficiently sure (i.e. entropy is low enough) to make a final decision.
+
+### Terms
+
+* $k$: length of one "symbol" to be decoded, in bits
+* $\beta$: confirmation level, in bits
+* $e_k$ the fraction of symbols that are decoded incorrectly
+* $f$: the actual error rate
+* $f'$: the error rate the decoder is configured for
+A decoder is specified by the tuple $(k, \beta, f')$.
+
+### Pseudo-code
+Pseudo-code for the algorithm is:
+```
+function horstein(k, beta, f')
+    p = (1-f')
+    F_0 = line_segement(0,0 => 1,1)
+    while entropy < k + beta do
+        median = find_median(F_i)
+        display(median, targets)
+        bit = receive_input()
+        left, right = split(F_i, m_i)
+        if bit == 0 then
+            left = p * left
+            right = (1-p) * right
+        else
+            left = (1-p) * left
+            right = p * right
+        end if
+        F_i+1 = left : right
+    end while
+return median
+```             
+(see below for real Python code)
+
+The key step is splitting the distribution function at the median, then scaling the left and right segments *proportionally to the probability of error*.
+
+![The key step in Horstein's algorithm: the current CDF $F(x)$ (black diagonal line) gets split at the median (red) and then scaled asymmetrically (gray).](imgs/horstein_step.png)
+
+#### Concentration of a PDF
+The effect of the algorithm is to gradually concentrate probability mass around the user's intended target. Because a full history is maintained, multiple hypotheses can be retained during selection.
+
+![The probability density concentrating around a target (highlighted in red) as Horstein's algorithm progresses.](imgs/pdfs.png)
+
+Even in the presence of error, this process will converge to a distribution which represents the user's intended selection, given a sufficient number of steps, and if the assumptions we made about the known channel statistics hold. The example below shows the PDF as noisy button pushes are registered:
+
+![Button pushes (top/bottom traces) driving the distribution of the decoder towards the target region (marked in red). Log probability density shown in the centre panel. Orange highlighted traces indicate erroneous inputs; 20% of inputs are flipped.](imgs/pulse_trace_0.png)
+
+### Robust bisection and user interfaces
+
+This gives a robust bisection method that will tolerate any level of error in the inputs and can produce output with a bounded residual error level $e_k$ -- which we can easily make very small. To make this into a user interface, we can:
+
+* map our input device to noisy buttons (we can easily extend to q-ary inputs instead of binary, but this is outside this blogpost)
+* display options on a number line as "blocks" and distort them according to the changing distribution function $F_i$. 
+
+This works, but has a couple of issues:
+
+* Distortion of the number line can look pretty strange during interaction and context can be lost quite easily.
+* Forcing all options onto a 1D strip limits screen space available for displaying options, and leads to issues about how to order options.
+
+These issues can be mitigated with a few design tweaks:
+
+* **Linear zooming** Replacing nonlinear distortion with a simple zooming interface that shows an area of fixed probability around the median makes it easier for a user to see what is going on. 
+* **2D mapping** Combining two *independent* decoders for each of the $x$ and $y$ spatial axes and switching among them according to which "needs" the most information at any step gives a simple way to extend this to 2D. 
+* **Diagonal bisection** Switching input mappings between $x$ and $y$ can be confusing (imagine the <- key means either "down" or "left" depending on which decoder is active). Rotating everything 45 degrees makes all decisions left/right
+
+That leads to the a final probabilistic spatial interface for unreliable binary inputs: a pair of Horstein decoders, using diagonal splits and linear zooming for display.
+
+![A zooming diagonal split interface using the Horstein decoder.](imgs/diagonal.png)
+
+# Questions 
+
+If you have questions like:
+
+* "...but does this work with biased channels where the two buttons have *different* flip probabilities?"
+* "...but why don't we just use undo?"
+* "...but what if we *don't* know the reliability of our buttons exactly?"
+* "...but what if the errors *aren't* independent, and there are long term correlations?"
+* "...but I already have an undo channel (like an error potential)?"
+* "...but how can I control the residual error rate $e_k$ precisely?"
+* "...but can users really operate an interface like this with high noise levels?" 
+
+then you can [find all of the answers in the full paper](http://doi.) [#Williamson2020]. 
+
+# Code
+
+## Python implementation of Horstein's algorithm
+
+The following is a basic implementation of Horstein's algorithm. No care is taken to be efficient or numerically stable.
+
+```python
+from math import log
+
+def f(xs, ys, y_test):
+    """Find the x-value which meets the given y value"""
+    for i in range(len(xs) - 1):
+        x, nx = xs[i], xs[i + 1]
+        y, ny = ys[i], ys[i + 1]
+        slope = (ny - y) / (nx - x)
+        if y < y_test <= ny:
+            return i + 1, x + (y_test - y) / slope
+
+def split(xs, ys, at, p):
+    """Split the PDF at "at", reweighting the
+        left side by p, the right side by 1-p"""
+    i, split = f(xs, ys, at)
+    xs = xs[:i] + [split] + xs[i:]
+    left_y = [2 * y * p for y in ys[:i] + [at]]
+    right_y = [1 - (2 * (1 - y) * (1 - p)) for y in ys[i:]]
+    return xs, left_y + right_y
+
+
+def entropy(xs, ys):
+    """Return the differential entropy of the PDF"""
+    slopes = [(ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]) 
+              for i in range(len(xs) - 1)]
+    hs = [
+        p * (log(p) / log(2)) * (xs[i + 1] - xs[i]) 
+        for i, p in enumerate(slopes) if p != 0
+    ]
+    return -sum(hs)
+
+
+def horstein(k, beta, f0, f1, elicit):
+    """Horstein decoding loop. 
+        k: symbol length
+        beta: confirmation steps
+        f0, f1: expected BER for each input
+        elicit: function(m_i) which should return 1 or 0 
+                (or True and False)
+    """
+    xs, ys = [0.0, 1.0], [0.0, 1.0]
+    p = (1 - f0) / ((1 - f0) + f1)
+    q = (1 - f1) / ((1 - f1) + f0)
+    while entropy(xs, ys) > -(k + beta):
+        _, m_i = f(xs, ys, 0.5)
+        # get input: is target left or right of median?
+        bit = elicit(m_i)
+        if bit:
+            xs, ys = split(xs, ys, 0.5, 1 - q)
+        else:
+            xs, ys = split(xs, ys, 0.5, p)
+            
+    # return MAP estimate
+    return f(xs, ys, 0.5)[1]
+
+def demo_elicit(m_i):
+    return  m_i < 0.71875 
+```
+
+    
+# References
+* [#Williamson2020]: 
+* [#Shannon1948]:Shannon, Claude E. ‘A Mathematical Theory of Communication’. Bell System Technical Journal 27, no. 3 (1948): 379–423.
+* [#Horstein1963]: M. Horstein, ‘Sequential transmission using noiseless feedback’, IEEE Transactions on Information Theory, vol. 9, no. 3, pp. 136–143, 1963.
+* [#ShayevitzFeder2008]: O. Shayevitz and M. Feder, ‘The posterior matching feedback scheme: Capacity achieving and error analysis’, in 2008 IEEE International Symposium on Information Theory, 2008, pp. 900–904.
+
+---
+
+
+[John H Williamson](https://johnhw.github.io)
+
+[GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
+
+<link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
+
+
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>

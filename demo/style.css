@@ -1,0 +1,91 @@
+.container
+{
+
+    margin-left: 2em;
+    margin-top: 1em;
+    padding-left: 1em;
+    padding-top: 1em;
+    padding-right: 1em;
+    margin-right: 1em;
+    width:100%;
+    font-family: "Comfortaa";
+}
+
+
+#entropy_progressbar
+{
+   width: 100%;
+    position: relative;
+}
+
+#lower-controls
+{
+    width:80%;
+    margin-left: 10%;
+    margin-right: 10%;
+
+}
+
+#entropy-progress-label
+{
+    position: absolute;
+    left: 10%;
+    top: 25%;
+    vertical-align: text-top;
+    font-family: "Comfortaa";    
+    color: #d7c9aa;
+
+}
+
+#selected
+{
+    
+    padding-left: 2em;
+    padding-right: 2em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    margin: 0.5em;
+    margin-top: 1em;
+    font-size: 20px;
+    font-family: "Comfortaa";
+    background-color:  #0b7a75;
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+#pad_table
+{
+    margin-left: 2em;
+
+}
+
+.uictrl
+{
+    
+    margin-top: 0.5em;
+    margin-right: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: 0.5em;
+    font-family: "Comfortaa";
+}
+
+#slider
+{
+    width: 100%;
+}
+
+
+
+#decr_button
+{
+ font-size: 30px;
+ margin-right: -1em;
+ margin-top: 5em;
+}
+
+#incr_button
+{
+    font-size: 30px;
+    margin-left: -1em;
+    margin-top:5em;
+}

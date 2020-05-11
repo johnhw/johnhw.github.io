@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <style>
+        body {
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Comfortaa">
+    <link rel="stylesheet" href="jquery-ui.css" type="text/css" charset="utf-8" />
+    <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
+
+
+
+
+</head>
+
+<body>
+    <div id="pad_table">
+        <table >
+            <tr> <td> </td> <td> <div id="selected"> </div> </td> </td> </tr>
+        <tr>
+            <td><button class="ui-button ui-widget ui-corner-all uictrl" id="decr_button">🞀</button>  </td> 
+            <td> <span class="container" id="container"></span>
+            <td>  <button class="ui-button ui-widget ui-corner-all uictrl" id="incr_button">🞂</button></td>
+            <tr> <td> </td> <td>
+                <div id="lower-controls">
+                <div id="slider" class="uictrl"></div>
+                <div class="uictrl">            
+                        Error level <span id="error_display" class="uictrl">0.0</span>%
+                    </div>
+                <div id="entropy_progressbar">
+                    <div id="entropy-progress-label">Entropy</div>
+                </div>
+                <br> 
+                    <button class="ui-button ui-widget ui-corner-all uictrl" id="reset_button"> ⟳ Reset</button>
+                    <input type="checkbox" name="checkbox-nested-3" id="prior_button">
+                    <label for="prior_button" class="ui-button ui-widget ui-corner-all uictrl"> ◞◠◟ Toggle prior </label>
+                </div>                
+            </td>             
+        </tr>
+        </table>
+    </div>
+
+    
+    <script src="jquery-3.4.1.min.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="kinetic-v5.0.1.min.js"></script>
+    <script src="interval.js"> </script>
+    <script src="selector_line_new.js"> </script>
+
+
+</body>
+
+</html>
