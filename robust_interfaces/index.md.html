@@ -8,9 +8,13 @@
 *This is an introduction to the paper: ["Efficient human-machine control with asymmetric marginal reliability input devices"](http://doi)*
 
 
-Most of time, user interfaces have fairly reliable inputs. Small levels of error are tolerable when we have simple correction features like undo. But in some contexts, like in brain-computer interfaces input is *very* noisy. This tends to result in a very frustrating user experience, and a variety of correction methods to reduce errors are used. Unfortunately, undo-style correction can be inefficient when controls are really unreliable; standard techniques can result in **correction cascades**. 
+
+
+Most of time, user interfaces have fairly reliable inputs. Small levels of error are tolerable when we have simple correction features like undo. But in some contexts, like in brain-computer interfaces input is *very* noisy. This tends to result in a very frustrating user experience, and a variety of correction methods to reduce errors are used. Unfortunately, undo-style correction can be inefficient when controls are really unreliable; standard techniques can result in **correction cascades** where attempts to undo previous actions introduce new errors that need undone. 
 
 ## Video
+
+To get a feel for how the ideas work in a user interface, watch the video first:
 
 ![Watch the video summary.](https://youtu.be/RB-bigdz4Ao)
 
@@ -39,10 +43,12 @@ To get a feel for Horstein's algorithm, try the demo:
 
 * In your head, select a number between 0 and 100. 
 * Press the left and right arrows to guide the dividing line to your chosen number (choosing left if the number is to the left of the divider, and so on). 
-* The *Error level* slider sets the random error level; this fraction of your inputs will be flipped (the button will flash red when this happens). 
+* The *Error level* slider sets the random error level; this fraction of your inputs will be flipped (the button will flash red when a flip happens). 
 * The *Entropy* progress bar shows the information accumulated. When this reaches the end, the system should have converged to the number you were thinking of.
     * This takes at least $\log_2(100) \approx 6.6$ bits; the decoder is configured to acquire 7.5 bits to account for a margin of error.
-* You can toggle a prior over numbers close to 50 with the *Toggle Prior* button; *Reset* resets the state of the decoder.    
+* You can toggle an (arbitrarily-chosen for demo purposes) prior over numbers close to 50 with the *Toggle Prior* button; 
+* *Reset* resets the state of the decoder.    
+
 
  <div id="pad_table">
         <table >
@@ -77,9 +83,14 @@ To get a feel for Horstein's algorithm, try the demo:
 <script src="demo/interval.js"> </script>
 <script src="demo/selector_line_new.js"> </script>
 
+##### Things to note
+
+* Regardless of how you set the *Error level*, you should always be able to select the number you are thinking of reliably, but more slowly.
+* Setting a prior will directly reduce the number of inputs required to select a likely number, and increase the number of inputs to select an unlikely one.
+
 ## Desiderata
 
-Returning to our user abstraction, if I, the user, want to do something useful -- *"start music playing"*, say -- we need a way of mapping noisy button pushes onto UI options. This process should be:
+Returning to our user abstraction, if I, the user, want to do something useful with a computer -- *"start music playing"*, say -- we need a way of mapping noisy button pushes onto UI options. This process should be:
 
 * **Universal**: I shouldn't have to change the way I use the "buttons" when the task or input device changes.
 * **Efficient**: I should need to press as few buttons as possible.
@@ -222,13 +233,32 @@ If you have questions like:
 
 * "...but does this work with biased channels where the two buttons have *different* flip probabilities?"
 * "...but why don't we just use undo?"
+* "...but what if we need to adapt to varying noise levels?"
 * "...but what if we *don't* know the reliability of our buttons exactly?"
 * "...but what if the errors *aren't* independent, and there are long term correlations?"
 * "...but I already have an undo channel (like an error potential)?"
 * "...but how can I control the residual error rate $e_k$ precisely?"
+* "...but how can I organise user interfaces onto a single number line?"
 * "...but can users really operate an interface like this with high noise levels?" 
 
 then you can [find all of the answers in the full paper](http://doi.) [#Williamson2020]. 
+
+# Can I use this in my interface?
+
+Sure, the code is just below :) It will make sense to use this type of decoder in an interface if:
+
+* you have a low-rate noisy input, like a noisy switch
+* you are able to model the noise in the input reasonably well
+* you have a high-bandwidth, noise-free display which can be attended to consistently
+* you can map UI options onto a line or plane such that users aren't burdened by search time
+* you are able to trade latency for reliability and don't require tight time-bounds on decisions
+
+It will be *particularly* useful if:
+
+* you have a probabilistic interface, that can incorporate priors and perform probabilistic updates
+* you have very high error rates, or channels with significant bias
+* your interface is already inherently spatial
+* you have auxilliary inputs (like an infrequent undo channel) that you want to fuse
 
 # Code
 
@@ -296,9 +326,11 @@ def demo_elicit(m_i):
     return  m_i < 0.71875 
 ```
 
+# Acknowledgements
+The germs of this paper were laid during the EU FP7 project FP7 project **FP7-224631** "TOBI (Tools for Brain-Computer Interfaces)". The development of this work was supported by EPSRC project "Closed-Loop Data Science for Complex, Computationally- and Data-Intensive Analytics" **EP/R018634/1** and the EU Horizon 2020 project **H2020-643955** "MoreGrasp".
 
 # References
-* [#Williamson2020]: Williamson, J. et al. 'Efficient human-machine control with asymmetric marginal reliability input devices', PLoS ONE (2020)
+* [#Williamson2020]: J. H. Williamson, M., Quek, I. Popescu, A. Ramsay, R. Murray-Smith M 'Efficient human-machine control with asymmetric marginal reliability input devices', PLoS ONE (2020)
 * [#Shannon1948]:Shannon, Claude E. ‘A Mathematical Theory of Communication’. Bell System Technical Journal 27, no. 3 (1948): 379–423.
 * [#Horstein1963]: M. Horstein, ‘Sequential transmission using noiseless feedback’, IEEE Transactions on Information Theory, vol. 9, no. 3, pp. 136–143, 1963.
 * [#ShayevitzFeder2008]: O. Shayevitz and M. Feder, ‘The posterior matching feedback scheme: Capacity achieving and error analysis’, in 2008 IEEE International Symposium on Information Theory, 2008, pp. 900–904.
