@@ -10,11 +10,11 @@
 
 
 
-Most of time, user interfaces have fairly reliable inputs. Small levels of error are tolerable when we have simple correction features like undo. But in some contexts, like in brain-computer interfaces input is *very* noisy. This tends to result in a very frustrating user experience, and a variety of correction methods to reduce errors are used. Unfortunately, undo-style correction can be inefficient when controls are really unreliable; standard techniques can result in **correction cascades** where attempts to undo previous actions introduce new errors that need undone. 
+Most of time, user interfaces have fairly reliable inputs. Small levels of error are tolerable when we have simple correction features like undo. But in some contexts, like in brain-computer interfaces input is *very* noisy. This tends to result in a frustrating user experience, and a variety of correction methods to reduce errors are used. Unfortunately, undo-style correction can be inefficient when controls are very unreliable; standard techniques can result in **correction cascades** where attempts to undo previous actions introduce new errors that need undone. 
 
 ## Video
 
-To get a feel for how the ideas work in a user interface, watch the video first:
+To get a feel for how the ideas work in a user interface, watch the video, then play with the interactive "noisy guessing game" demo in the section below.
 
 ![Watch the video summary.](https://youtu.be/RB-bigdz4Ao)
 
@@ -104,8 +104,8 @@ Ideally, it would also be **probabilistic**, so that it gives a probability dist
 
 Assume we have a collection of UI options denoted $X = {{x_1, x_2, x_3, \dots}}$. I have an **intention** to select a specific $X=x_i$. How can we update the conditional distribution $P(X=x_i|X_{t-1}, Y_t)$, where $Y_t$ is the input from a user (e.g. a BCI signal) at time $t$ and $X_{t-1}$ is the belief distribution at the previous time step (or a prior before we begin interaction)? If we could do that we could then:
 
-* decide on a threshold to trigger actions, e.g. an entropy threshold $H(X)\leq h$ or a maximum a posteriori probability threshold $\max P(X=x_i|X_{t-1}, Y_t) \geq p*$.
-* decide on a rule to choose the target after a specific action, e.g. $\operatorname{argmax}_{i}[P(X)]$ or $\mathbb{E}[U(X_t)]$ where $U$ is a utility function over options.
+* decide on a threshold to trigger actions, e.g. an entropy threshold $H(X)\leq h$ or a maximum a posteriori probability threshold $\max P(X=x_i|X_{t-1}, Y_t) \geq p_t$.
+* decide on a rule to choose the target after a specific action, e.g. $\operatorname{argmax}_{i}[P(X_t=x_i)]$ or $\operatorname{argmax}_{i}\mathbb{E}[U(X_t)]$ where $U(x)$ is a utility function over options.
 
 ## What is an interface doing?
 
@@ -113,7 +113,7 @@ Assume we have a collection of UI options denoted $X = {{x_1, x_2, x_3, \dots}}$
 
 From an information theory perspective, we can view the human-machine loop as a way of *coding* for a noisy, bandwidth-limited input channel. How can we efficiently and robustly transport intention to system state? We can map common user interface elements onto the standard elements of a communication system:
 
-* **entropy coding** which reduces the bandwidth (the number of coding actions) required by *compressing* information. This includes traditional system like macros which replace repetitive sequences of inputs with shortcuts, or direct entropy coding mechanisms like [Dasher](https://en.wikipedia.org/wiki/Dasher_(software))
+* **entropy coding** which reduces the bandwidth (the number of coding actions) required by *compressing* information. This includes traditional system like macros which replace repetitive sequences of inputs with shortcuts, or direct entropy coding mechanisms like [Dasher](https://en.wikipedia.org/wiki/Dasher_(software)
 * **channel coding** which protects information from disturbances. In most interfaces, this takes the form of feedback codes that allow **rollback** of state -- backspace or undo. Specific codes are dedicated to reversal of prior inputs. The interfaces we will derive use **compensation** to armour information such that it is robustly transmitted in the presence of any level of error.
 * **line coding** which maps discrete codes from the upper layers into physical changes in the world (e.g. moving a finger) that can be sensed and classified by a system (e.g. registering the closing of a key-switch). This includes mechanisms like spatial mappings (keyboard/touchscreen), cursor control, gesture recognition and motion correlation.
 
@@ -162,7 +162,7 @@ We will have a channel which flips a fraction $f$ of inputs. We configure a deco
 ### Terms
 
 * $k$: length of one "symbol" to be decoded, in bits
-* $\beta$: confirmation level, in bits
+* $\beta$: confirmation level, in bits (this controls $e_k$)
 * $e_k$ the fraction of symbols that are decoded incorrectly
 * $f$: the actual error rate
 * $f'$: the error rate the decoder is configured for
@@ -199,7 +199,7 @@ The key step is splitting the distribution function at the median, then scaling 
 #### Concentration of a PDF
 The effect of the algorithm is to gradually concentrate probability mass around the user's intended target. Because a full history is maintained, multiple hypotheses can be retained during selection.
 
-![The probability density concentrating around a target (highlighted in red) as Horstein's algorithm progresses.](imgs/pdfs.png)
+![The probability density concentrating around a target (highlighted in red) as Horstein's algorithm progresses. $b_0, b_1, \dots$ indicate sequential bits of input (noisy button pushes).](imgs/pdfs.png)
 
 Even in the presence of error, this process will converge to a distribution which represents the user's intended selection, given a sufficient number of steps, and if the assumptions we made about the known channel statistics hold. The example below shows the PDF as noisy button pushes are registered:
 
@@ -207,7 +207,7 @@ Even in the presence of error, this process will converge to a distribution whic
 
 ### Robust bisection and user interfaces
 
-This gives a robust bisection method that will tolerate any level of error in the inputs and can produce output with a bounded residual error level $e_k$ -- which we can easily make very small. To make this into a user interface, we can:
+This gives a robust bisection method that will tolerate any level of error in the inputs and can produce output with a bounded residual error level $e_k$ -- which we can choose to make very small. To make this into a user interface, we can:
 
 * map our input device to noisy buttons (we can easily extend to q-ary inputs instead of binary, but this is outside this blogpost)
 * display options on a number line as "blocks" and distort them according to the changing distribution function $F_i$. 
@@ -233,12 +233,13 @@ If you have questions like:
 
 * "...but does this work with biased channels where the two buttons have *different* flip probabilities?"
 * "...but why don't we just use undo?"
+* "...but what if a user changes their mind halfway through selection?"
 * "...but what if we need to adapt to varying noise levels?"
 * "...but what if we *don't* know the reliability of our buttons exactly?"
 * "...but what if the errors *aren't* independent, and there are long term correlations?"
 * "...but I already have an undo channel (like an error potential)?"
 * "...but how can I control the residual error rate $e_k$ precisely?"
-* "...but how can I organise user interfaces onto a single number line?"
+* "...but how can I organise user interfaces onto a single unit square?"
 * "...but can users really operate an interface like this with high noise levels?" 
 
 then you can [find all of the answers in the full paper](http://doi.) [#Williamson2020]. 
@@ -247,11 +248,12 @@ then you can [find all of the answers in the full paper](http://doi.) [#Williams
 
 Sure, the code is just below :) It will make sense to use this type of decoder in an interface if:
 
-* you have a low-rate noisy input, like a noisy switch
+* you have a low-rate noisy input, like a noisy switch, producing corrupted binary (or one-of-$N$, where $N$ is small) symbols infrequently
 * you are able to model the noise in the input reasonably well
 * you have a high-bandwidth, noise-free display which can be attended to consistently
 * you can map UI options onto a line or plane such that users aren't burdened by search time
-* you are able to trade latency for reliability and don't require tight time-bounds on decisions
+* you have a large enough set of options for each selection or you can "bundle" multiple selections into one larger selection
+* you are able to trade latency for reliability and don't require tight time-bounds on decisions. *"Good for playing Solitaire, bad for playing GTA V."*
 
 It will be *particularly* useful if:
 
@@ -327,7 +329,10 @@ def demo_elicit(m_i):
 ```
 
 # Acknowledgements
-The germs of this paper were laid during the EU FP7 project FP7 project **FP7-224631** "TOBI (Tools for Brain-Computer Interfaces)". The development of this work was supported by EPSRC project "Closed-Loop Data Science for Complex, Computationally- and Data-Intensive Analytics" **EP/R018634/1** and the EU Horizon 2020 project **H2020-643955** "MoreGrasp".
+* The germs of this paper were laid during the EU FP7 project FP7 project **FP7-224631** "TOBI (Tools for Brain-Computer Interfaces)". 
+* The further development of this work was supported by:
+    * EPSRC project "Closed-Loop Data Science for Complex, Computationally- and Data-Intensive Analytics" **EP/R018634/1** and 
+    * EU Horizon 2020 project **H2020-643955** "MoreGrasp".
 
 # References
 * [#Williamson2020]: J. H. Williamson, M., Quek, I. Popescu, A. Ramsay, R. Murray-Smith M 'Efficient human-machine control with asymmetric marginal reliability input devices', PLoS ONE (2020)
