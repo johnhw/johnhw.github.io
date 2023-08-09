@@ -1,0 +1,36 @@
+<meta charset="utf-8"> 
+**Logging experimental data: Part V: A complete example**
+        John H. Williamson
+
+[Back to the series on logging](index.md.html)        
+
+
+# Example
+
+The repository [sql_log_example](http://github.com/johnhw/sql_log_example) has example code and simple scripts for logging. 
+
+```
+    sql_log_example/
+        add_user.py         # adds a user to the logfile; 
+                            # can either use command line arguments or will prompt for info
+        backup_log.sh       # backs up the log via rsync
+        commit_log.sh       # backs up the log via git
+        create_tables.sql   # the schema for a log file
+        pseudo.py           # creates pseudonyms
+        db_utils.py         # basic utilities for working with a sqlite database in python  
+                            # including getting machine info (UUIDs, etc.) timestamps,
+                            # dumping tables in a nice format, etc.
+        experiment.py       # runs a demo experiment
+        simulate.py         # generate a bunch of simulated data
+        fresh_log.sh        # moves the database to a backup and, runs `create_tables.sql`
+```
+
+
+[John H Williamson](https://johnhw.github.io)
+
+[GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
+
+<link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
+<script>
+window.markdeepOptions = {tocStyle:'short'};</script>
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>

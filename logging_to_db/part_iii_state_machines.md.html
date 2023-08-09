@@ -1,0 +1,191 @@
+<meta charset="utf-8"> 
+**Logging experimental data: Part IIU: State machines**
+        John H. Williamson
+
+[Back to the series on logging](index.md.html)        
+
+**Note: this section is less about the process of logging and more about writing experimental software. If you just want to dump numbers to a file, feel free to skip this part!**
+
+# States and state machines
+
+Experiments are generally driven by a *state machine*, where state transitions move participants from one part of an experimental trial to another. In the very simplest experiments there are a fixed sequence of tasks that are executed one after the other, identically for all users. More complex experiments will have logical groupings of tasks (e.g. into conditions). Some of these task groupings will only be taken by some subsets of users. Some experiments will have conditional execution of subtasks (such as repeating a trial until a success criterion, or branching tasks depending on previous choices). An subtask might be ended by a user action, or a time out. The ordering of the (some) of the transitions is often shuffled between users or repetitions; for example, counterbalancing condition order to mitigate learning effects in a within-subjects study.
+
+## Experiment states and paths
+Experimental software needs to manage the transition between states. These nested state machines are well-represented by Harel's [statecharts](https://statecharts.dev/what-is-a-statechart.html), though drawing the statechart for an experiment is often much too complicated to be worthwhile. It's easier just to implement the code.
+
+### State machine example
+
+These experiment states are typically hierarchically structured and ordered. For example, imagine a Fitts' law style pointing task (testing how fast people can click on targets with a pointing device). We might have
+
+* Two pointing devices: mouse with inertia (A) and mouse without inertia (B)
+* Two types of task: static pointing, tracking moving objects
+* Five levels of difficulty (in terms of target size/distance for static, target size/speed for tracking)
+* Three repetitions of each target acquisition.
+* In between each repetition there might be a cooldown and countdown phase
+
+---
+
+* Each user uses *either* the inertia or the without inertia pointing device (between groups)
+* Each performs the task type (static, moving) in counterbalanced order. 
+* Each pointing task ends when either the user enters the target *or* more than five seconds elapse. 
+* We'd have some initial welcome and information screens, and a debriefing page at the very end. 
+* Difficulty levels might be randomised with a task. 
+
+This means that the states have an order or subset of valid states which has to be determined for each user. In more complex experiments, the order may only be known at run-time, e.g. if a more difficult task will only be presented if an easier task has already been completed.
+
+### Paths and state transition
+* A path-like notation is useful to record which state the software is in: `/A/1/2/1` or even better `/Stage:Main/Pointing:Inertia/Movement:Static/ID:5/Rep:1/Target:3/Phase:Cooldown` 
+* The path notation with `attr:value` style elements is particularly helpful when describing orderings or subsets
+* Glob-notation is a good way to refer to specific subsets, like `/Stage:*` or `/Stage:Main/Pointing:*/Movement:Static/**`
+
+### Finite state machines
+* One useful model has state changes that come in two types:
+    * `jump` where an activity jumps to a specific path
+    * `next` when an activity finishes normally (or is aborted) and moves to a relative part of the hierarchy based on the ordering of states
+
+* A sequence of the natural state change order needs to be created, usually for each trial, unless the ordering is completely fixed. 
+    
+* One way of representing these changes is to have functions to change state:    
+    * `fsm.jump(reason, path)` jump immediately to the given absolute path, logging `reason` (a string) as the reason for the state change.        
+    * `fsm.next(reason, levels=1, normal=True)` when an activity finishes
+        * `next("user clicked on target")`
+        * `levels` allows `next` to optionally advance "up the hierarchy" e.g. to the next interface type or back to the start of a task.
+            * `levels=-1` repeats the last "element"; `levels=1` advances normally,  `levels=0` does nothing, `levels=2` would skip to the start of the next node one level "up"
+        * `normal` can be used to flag transitions which are "unnatural", like an trial aborted due to equipment failure
+* `src/experiment_states.py` shows how this can be implemented in Python
+
+### States, resuming, context and cache
+Some questions that arise in experimental code:
+1. How is flow control administered? Does an FSM drive a main body of code, or does the code get driven by the FSM?
+1. How do context variables get stored and passed around? How will the logger know that the current user is `BESUT-AGATA`?
+1. How will experimental states be saved and resumed? How would we make use of the `saves` table described above?
+
+#### Flow control
+My suggestion is to write experimental software that is driven by the state machine, with an explicit "dispatch" loop, like this:
+
+```python
+def dispatch(fsm, context, cache):    
+    while fsm.state != "COMPLETED" and fsm.state != "ABORTED":
+        if fsm.state == "/intro":
+            intro(context, cache)
+        if fsm.state.startswith("/main"):
+            main_experiment(context, cache)
+        # etc.
+        if fsm.state=="/debrief"
+            debrief(context, cache)
+        fsm.next(1) # advance to next state
+```
+
+This is easier to reason about than spreading state changes about the code (though code could still `jump` or `next` internally if required).
+
+The three parameters I've used are:
+* `fsm` the state machine, as above
+* `context` a dictionary of variables that represent the current context (like current user id, current trial id) that includes *everything that might need to be serialised to store the current state*.
+* `cache` a dictionary of variables (or any other data type) that represents values to carry around that can be reconstructed and shouldn't be persisted (like a network connection reference, database connection, or a file handle).
+
+### Context variables
+The `context` dictionary is used to represent the key state of the experiment. A `context` might look like:
+```python
+{
+    "user_id":"BESUT-AGATA",
+    "trial_id":7,
+    "random_state":[...],
+}
+```
+
+The experiment can then be `saved`, `loaded` or `inited`:
+
+```python
+def save_state(context, cache):
+    serialised_context = json.dumps(context)    
+    cache.db.execute("INSERT INTO saves VALUES (time, resume_state, user_id, trial_id) VALUES (?,?,?,?)",
+            get_time_string(), serialised_context, context["user_id"], context["trial_id"])
+
+def resume_state(cache):
+    result = cache.db.execute("SELECT resume_state FROM saves ORDER BY rowid DESC LIMIT 1;").fetchone()
+    return json.loads(result)
+
+def init_state(fsm_spec, resume=False, **kwargs):    
+    cache = init_cache(**kwargs)
+    if not resume:
+        # cold start, we need to create both cache and context
+        context = init_context(**kwargs)
+    else:
+        context = resume_state(cache)
+    # attach the FSM, with a callback that "knows" the context and cache
+    # so has a database handle, etc.
+    fsm = FSM(fsm_spec, pre_state_change = 
+            lambda prev, new, reason:log_state(prev, new, reason, context, cache))
+    if context.current_state != fsm.state:
+        fsm.jump(context.current_state, "Resumed state")
+    # enable debug logging to database
+    attach_debug_log(cache.db)
+    return context, cache
+
+
+def log_state(prev, new, reason, context, cache):
+    context.current_state = new
+    cache.db.execute("INSERT INTO states (time, prev, new, reason, trial_id) VALUES (?,?,?,?,?)",
+            get_time_string(), prev, new, reason, context["trial_id"])
+
+def init_context(user_id, trial_id, **kwargs):
+    context = {"user_id":user_id, 
+               "trial_id": ...}
+    return context
+
+def init_cache(db_file, **kwargs):
+    db_connection = sqlite3.connect(db_file)
+    cache = {"db":db_connection, ...}
+```
+
+
+### Example
+Here's an skeleton example of how the Fitts' law experiment described might be configured and executed using `experiment_states.py`
+
+```python
+from experiment_states import FSM
+
+x = State("intro") | 
+    State("main") * (            
+            State("inertia", ["on", "off"]) * 
+            State("target", ["static", "dynamic"]) * 
+            State("ID", 5) * State("repeat", 3) * 
+            State("phase", ["countdown", "active", "cooldown"])
+    )
+    | State("debrief")    
+
+def log_state_change(prev, new, reason):
+    logger.state_change(prev, new, reason)
+
+fsm = FSM(experiment_tree, pre_state=log_state_change)
+fsm.select("inertia", "off")
+fsm.order("target", "random")
+
+print(fsm.state) # will be START
+
+def show_intro(fsm):
+    # pass    
+
+fsm.jump("/intro", fn=show_intro) 
+fsm.next(1)
+
+
+def main_experiment(self):
+    self.next(0) # jump to next valid state
+
+
+```
+
+
+# Conclusion
+
+[Part IV: pseudonyms](part_iv_pseudonyms.md.html)
+
+[John H Williamson](https://johnhw.github.io)
+
+[GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
+
+<link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
+<script>
+window.markdeepOptions = {tocStyle:'short'};</script>
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>

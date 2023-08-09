@@ -1,0 +1,62 @@
+<meta charset="utf-8"> 
+**Logging experimental data: Part IV: Pseudonyms**
+        John H. Williamson
+
+[Back to the series on logging](index.md.html)        
+
+# BESUT-AGATA style pseudonyms
+
+Almost all human subject studies in computer science are conducted in a way that personal identity is not stored with experimental data. Users are therefore typically identified by pseudonyms in logs. I use the following code to generate pseudonyms:
+
+```python
+import secrets, random, hashlib, sys
+
+def make_pseudo(*args):
+    if len(args)==0:
+        token = secrets.token_hex(32)  # random
+    else:
+        h = hashlib.sha512()  # hashed arguments
+        h.update(" ".join(sys.argv[1:]).encode("utf-8"))
+        token = h.hexdigest()
+
+    random.seed(int(token, 16))
+    c, v = "BCDFGHKLMNPRSTVWZ", "UEIOA"
+    pattern = [c, v, c, v, c, "-", v, c, v, c, v]
+    return "".join(random.choice(s) for s in pattern)
+
+if __name__ == "__main__":
+    print(make_pseudo(*sys.argv[1:]))    
+```
+
+This generates *pronounceable* random pseudonyms that are long enough that they are unlikely to be confused or mistyped for another, like:
+
+```
+MOBAT-ASAHO
+MIFUM-OZOPO
+KAKOH-EDIHA
+TODID-OZUDI
+MEDOH-UFORO
+CIDIS-AGAVO
+```
+
+The script can also take arguments to create a pseudonym from a hash of existing data. When might this be useful? Sometimes there are studies where random anonymous identifiers aren't desirable; instead we can generate a pseudonym of a fixed format from some known information (like a "master" pseudonym and a trial identifier):
+
+```
+python pseudo.py user:2160193 trial:4 site:gla
+
+> MEKIR-AHUCA
+```
+
+We can always recover the pseudonym from the original arguments, but it is not easy to do so in reverse.
+
+
+[Part V: An example](part_v_example.md.html)
+
+[John H Williamson](https://johnhw.github.io)
+
+[GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
+
+<link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
+<script>
+window.markdeepOptions = {tocStyle:'short'};</script>
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
