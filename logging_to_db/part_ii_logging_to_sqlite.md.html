@@ -160,9 +160,40 @@ Every experiment will have its own needs. But there are several common table str
 > In these examples I've replaced timestamps with `x` to make the tables readable.
 > In practice they'd be ISO8601 timestamps, as described in Section 1.
 
-The basic tables are usually `users, trials, states, log, notes`.
 
-The simplest experiments might just have a single `log` table, and maybe a `notes` table to record additional information. More complicated experiments need a bit more structure.
+## The very simplest log
+
+The simplest experiments might just have a single `log` table, and maybe a `notes` table to record additional information. More complicated experiments need a bit more structure. For example, there might be a table
+
+```
+    Timestamp   User    State   Action  Duration  Success
+    -----------------------------------------------------
+        x       QRF     s1      acquire     5.4     F
+        x       QRF     s2      acquire     10.2    T
+```
+
+or even just a table of timestamp JSON rows:
+
+```
+    Timestamp           JSON
+    -------------------------------------------
+        x               {"user":"s1", ...}
+
+```
+
+but this loses much of the power of a SQL database. Still, with JSON support in sqlite, you can execute queries like:
+
+```sql
+SELECT 
+    json_extract(json, "$.user") as user 
+    json_extract(json, "$.task") as task from log where user='s1' 
+    GROUP BY task ORDER BY timestamp LIMIT 10
+```
+
+to get the 10 first rows for user `s1` separated by task. This type of queries will be slow for big tables.
+
+## Prototype tables
+More complex experiments benefit from more structure. Much of this is fairly unchanged from one experiment to the next. The basic tables are usually `users, trials, states, log, notes`.
 
 ### users
 Most experimental trials that I work with involve users. Users are generally "enrolled" in a trial and then are assigned to undertake some or all of the experimental tasks. Typically, they have some associated metadata such as demographics or anthropometrics.
@@ -270,7 +301,7 @@ There are a few other tables that are often useful to have:
 ```
 
 ### saves
-A useful extension is to record "resume state" (a snapshot of the complete state of the experimental software serialised -- the "save game" state) in a `saves` table, so that trials can be easily restarted in this case of a software problem, or a user issue (like a bathroom break). This is usually written as a JSON string, perhaps at intervals of two minutes or so, or after a completion of a task state. Obviously, the experimental software needs to be written carefully such that it can safely resume from such a snapshot!
+A useful extension is to record "resume state" (a snapshot of the complete state of the experimental software serialised -- the "save game" state) in a `saves` table, so that trials can be easily restarted in this case of a software problem, or a user issue. This is usually written as a JSON string, perhaps at intervals of two minutes or so, or after a completion of a task state. Obviously, the experimental software needs to be written carefully such that it can safely resume from such a snapshot!
 
 ```
     Timestamp   TrialID User    ResumeState
@@ -314,7 +345,7 @@ It's not necessary to store this in the same file as the log database (maybe it'
     x           Warning     Module xxx...
 ```
 
-This can come in very useful if there do turn out to be problems with the logger.
+This can come in very useful if there do turn out to be problems with the logging software.
 
 ## Ideas and examples
 
@@ -322,7 +353,7 @@ There are several useful ideas in these tables:
 
 * Give users randomised, distinct and ideally pronounceable pseudonyms (like ABQ or QUROT-ABEBE), **not sequential numbers or easily confused codes**. 
 * Record accurate, complete timestamps everywhere. This can be invaluable in piecing together what really happened if you forgot to record something.
-* Refer to logical experimental states with a *path-like notation*. For example "A/9/3/1" might mean "group A, trial 9, condition 3, repetition 1"; "A/10/Info" might mean "group A, trial 10, information page". See below for a more thorough discussion of path notations for states.
+* Refer to logical experimental states with a *path-like notation*. For example "A/9/3/1" might mean "group A, trial 9, condition 3, repetition 1"; "A/10/Info" might mean "group A, trial 10, information page". See [the next section](part_iii_state_machines.md.html) for a more thorough discussion of path notations for states.
 * Record changes of this logical state path in a separate table, and store the current state along with the primary log(s).
 * Think about how you will stop and resume experiments: you should have some form of snapshot state that can be serialised and resumed from. A good test of this is to always start a new trial by writing a snapshot to the log, and immediately resuming from it.
 
@@ -332,8 +363,8 @@ Some example queries using the table structure above:
 * The number of "real" (not test/pilot/simulated) users `SELECT COUNT(*) FROM USERS WHERE etype=real` 
 * The average task time for task A/3/2 `SELECT MEAN(TaskTime) FROM LOG WHERE ExptState="A/3/2"` 
 * The max task time for any of the tasks in group A `SELECT MAX(TaskTime) FROM LOG WHERE ExptState LIKE "A/"` 
-* The number of log entries for each user. `SELECT COUNT(*) FROM log GROUPBY user` 
-* The number of times each  machine was started `SELECT COUNT(*) FROM runs WHERE action="START" GROUPBY hostname`
+* The number of log entries for each user. `SELECT COUNT(*) FROM log GROUP BY user` 
+* The number of times each  machine was started `SELECT COUNT(*) FROM runs WHERE action="START" GROUP BY hostname`
 
 
 # Tips and tools for working with sqlite logs
@@ -341,8 +372,10 @@ Some example queries using the table structure above:
 ## sqlite setup
 * You don't really need to configure `sqlite` beyond creating the SQL schema.
 * However, it is useful to enable write-ahead logging (WAL) to improve database performance with `PRAGMA journal_mode=WAL;`
-* Setting `PRAGMA synchronous=NORMAL` when using WAL will increase speed dramatically for frequent writes, at the cost of a possible small data loss if the whole system (not just your code) crashes (loses power, blue screens etc.). Generally, this is the option to use for logging.
+* Setting `PRAGMA synchronous=NORMAL` when using WAL will increase speed for frequent writes, at the cost of a possible small data loss if the whole system (not just your code) crashes (loses power, blue screens etc.). Generally, this is the option to use for logging.
 * If you are writing log rows *very* frequently, then autocommits (the sqlite default) may cause performance issues. You can mitigate this by batching up a bunch of rows into a single transaction, with `BEGIN` and `COMMIT` before and after the transaction.    
+    * For example, if you are continuously logging a value 100 times a second, you might want to buffer a second's worth of data and write batches of 100 in a single commit.
+    * If you are writing continuously 10,000 times a second, a database is probably no longer performant! You might want to stream to a binary file instead and cross-reference key timestamps in the database.
 
 ## Creating the tables
 * A single `create_tables.sql` file that constructs the database is a good way to specify the schema.
@@ -413,11 +446,11 @@ For example:
 ## Tools
 ### datasette
 
-Use [`datasette`](https://datasette.io/) to browse a log file.
+Use [`datasette`](https://datasette.io/) to browse and query a log file. 
 
 `datasette logs.db`
 
-instantly launches a local web server where you can browse tables, run SQL queries and perform basic exploratory analysis with no other setup. This is an invaluable tool for in on the logs as experiments are running, and for doing quick exploratory analyses.
+instantly launches a local web server on `localhost:8001` where you can browse tables, run SQL queries and perform basic exploratory analysis with no other setup required. This is an invaluable tool for in on the logs as experiments are running, and for doing quick exploratory analyses.
 
 <img src="imgs/datasette.png">
 
@@ -432,6 +465,8 @@ instantly launches a local web server where you can browse tables, run SQL queri
 
 
 # Conclusion
+
+There are some real advantages to using a database as a store for logs. `sqlite` is a good fit for this niche. Time spent preparing a good log format (well thought out schema, some basic scripting to automate log tasks) is a good investment for successful experimental work. The ease of disseminating a single, robustly structured file which is accessible on many platforms, languages and tools is of significant value to researchers.
 
 
 [Part III: state machines](part_iii_state_machines.md.html)

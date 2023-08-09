@@ -35,8 +35,31 @@ This means that the states have an order or subset of valid states which has to 
 
 ### Paths and state transition
 * A path-like notation is useful to record which state the software is in: `/A/1/2/1` or even better `/Stage:Main/Pointing:Inertia/Movement:Static/ID:5/Rep:1/Target:3/Phase:Cooldown` 
-* The path notation with `attr:value` style elements is particularly helpful when describing orderings or subsets
-* Glob-notation is a good way to refer to specific subsets, like `/Stage:*` or `/Stage:Main/Pointing:*/Movement:Static/**`
+* The path notation with `attr:value` style elements is particularly helpful when describing orderings or subsets; it can also be translated to/from a flat dictionary:
+```python
+    {
+        "stage":"main",
+        "pointing":"inertia",
+        "movement":"static",
+        "id":5,
+        "rep":1,
+        "target:3
+        "phase":"cooldown"
+    }
+```
+* Glob-notation is a way to refer to specific subsets, like `/Stage:*` or `/Stage:Main/Pointing:*/Movement:Static/**`
+
+### Subsets
+It is often necessary to control the specific path through a state machine. A basic operation is to set the subset of values for a given attribute:
+- `fsm.subset("pointing", ["inertia"])` selecting just the inertia path
+- `fsm.subset("pointing", ["inertia", "no_inertia"]).subset("movement", ["static", "dynamic"])` ordering the `pointing` and `movement` paths
+
+Some convenience functions that just wrap `fsm.subset(attr, values)`:
+- `fsm.select(attr, value)` subset attr to have just the value `value`
+- `fsm.order(attr, values)` specify the specific order of values, validating that they are all present
+- `fsm.shuffle(attr, rng)` shuffle the values for attr with the given random number generator
+- `fsm.permute(attr, index)` select permutation `index` of the possible values (using the natural ordering of permutations)
+
 
 ### Finite state machines
 * One useful model has state changes that come in two types:

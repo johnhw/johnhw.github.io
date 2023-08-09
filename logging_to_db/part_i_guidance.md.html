@@ -7,7 +7,7 @@
 # <a id="advice"> Advice and war stories </a>
 
 ## Problems
-I have supervised many many students doing this type of logging task (and some professionals!) and *virtually all of them* had serious problems at some stage. Ones I have seen:
+I have supervised many, many students creating experimental logs (and some professionals!) and *virtually all of them* had serious problems at some stage. Ones I have seen:
 
     
     * Files not being flushed after writing and crashes truncating files, often to 0 bytes;
@@ -34,10 +34,10 @@ Most such problems are ironed out in pilot tests; but some slip through and can 
 
 ## Basic lessons
 
-* Lesson 1: Every experiment needs a thorough pilot *that includes a detailed postmortem of the log files*. 
+* **Lesson 1**: Every experiment needs a thorough pilot *that includes a detailed postmortem of the log files*. 
     * Are the files there? Do they have enough rows? Are there consistent timestamps? Is every row parsed correctly? Do all values lie in sensible ranges? Is there more than one unique value in each column (to catch "everything is always zero" bugs)?
 
-* Lesson 2: All experimental data needs accurate, full precision timestamps whenever a row of data is written.  
+* **Lesson 2**: All experimental data needs accurate, full precision timestamps whenever a row of data is written.  
     * Timestamps should come from clocks synchronised with NTP to a reliable time server.
     * Ideally these should be ISO 8601 format string dates like `2022-08-30T15:46:26.585824+01:00`, with **timezone**, at least millisecond precision
         * (`date -Ins` will generate a proper timestamp at the command line in Unix systems...)
@@ -47,11 +47,11 @@ Most such problems are ironed out in pilot tests; but some slip through and can 
     * Timestamps are a reliable way of working out what *really* happened when. 
     * Timestamps should not be: frame counts (!), milliseconds since the app started, seconds since the epoch, microdays since the birth of Mohamed...
 
-* Lesson 3: Data needs to be written sequentially, in a true "ship's log" format, where later execution can never modify an earlier record. Logs are always immutable.
+* **Lesson 3**: Data needs to be written sequentially, in a true "ship's log" format, where later execution can never modify an earlier record. Logs are always immutable.
 
-* Lesson 4: If multiple threads or processes might need to contribute to the log, a separate process/thread should be dedicated to queue and write log files. Alternatively, each process/device/thread should write its own log file and the results should be merged in a post-processing step after all experiments are concluded. Ideally, both. 
+* **Lesson 4**: If multiple threads or processes might need to contribute to the log, a separate process/thread should be dedicated to queue and write log files. Alternatively, each process/device/thread should write its own log file and the results should be merged in a post-processing step after all experiments are concluded. Ideally, both. 
 
-* Lesson 5: Experimental software needs to perform basic checks and report on the log files **every time it is used** and ideally verify and report log integrity/status **during execution**. 
+* **Lesson 5**: Experimental software needs to perform basic checks and report on the log files **every time it is used** and ideally verify and report log integrity/status **during execution**. 
     * This can be as simple as console messages like:
     ```
     Starting...
@@ -63,19 +63,19 @@ Most such problems are ironed out in pilot tests; but some slip through and can 
     * This can save hours of headache (and heartache!).
     * Ideally, the logging software should do this by *reading back* the log and return stats based on what was parsed from the file, not reporting what was apparently written!
 
-* Lesson 6: Pre-assign any "randomised" elements and avoid generating anything on the fly. 
+* **Lesson 6**: Pre-assign any "randomised" elements and avoid generating anything on the fly. 
     * If that isn't possible, hash known and recorded attributes (e.g. user ID+*recorded* time) to make a fixed, recoverable seed. 
     * If that isn't reasonable, at least always record the random seed/random state used on every run. Experimental work must be reproduceable.
         * Make sure all the seeds that could affect the experiment are set correctly (e.g. in Python, this might involve setting the `random` seed, the `numpy` seed *and* the `pytorch` seed!)
 
-* Lesson 7: Use well-tested libraries to read and write data, even if the format seems simple. It is easy to write an invalid CSV file if you do it yourself. 
+* **Lesson 7**: Use well-tested libraries to read and write data, even if the format seems simple. It is easy to write an invalid CSV file if you do it yourself. 
 
-* Lesson 8: Estimate how much data will be logged -- even a ballpark estimate. "1000 rows/minute" or "10,000 events per trial x 18 trials". A volume estimate is essential in tracking quality of log files.
+* **Lesson 8**: Estimate how much data will be logged -- even a ballpark estimate. "1000 rows/minute" or "10,000 events per trial x 18 trials". A volume estimate is essential in tracking quality of log files.
   *  Be realistic about the volume of data to be collected. If there's going to be tens of millions of rows of data, is a single JSON or CSV file really a good option? If there will be ten rows, is a Postgres database really required?
 
-* Lesson 9: Write missing data explicitly. Use a consistent form for "null" that cannot be confused for real data. Don't allow nulls where there must be valid data!
+* **Lesson 9**: Write missing data explicitly. Use a consistent form for "null" that cannot be confused for real data. Don't allow nulls where there must be valid data!
 
-* Lesson 10: Determine some kind of schema that can be validated. It's particularly useful to know the valid ranges of numerical data or valid category codes that might be logged. 
+* **Lesson 10**: Determine some kind of schema that can be validated. It's particularly useful to know the valid ranges of numerical data or valid category codes that might be logged. 
 
 
 ## Good practice
