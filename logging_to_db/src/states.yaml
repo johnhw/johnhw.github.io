@@ -1,0 +1,39 @@
+Root:
+  to: info
+  
+  info:
+    shuffle: True
+    to:
+      A: 
+        shuffle: True
+        repeat: 2
+        to: 
+          A1:
+            size: 5
+            distance: 10
+            repeat: 3
+          A2:
+            size: 5
+            distance: 10
+            repeat: 3
+          A3:
+            size: 10
+            distance: 10
+            repeat: 3
+          A4:
+            size: 15
+            distance: 20
+            repeat: 3
+          A5:
+            size: 25
+            distance: 30
+            repeat: 3                  
+      B: 
+        to: [B1, B2, B3, B4, B5]
+        shuffle: True
+        repeat: 2
+
+
+
+
+

@@ -1,0 +1,118 @@
+<meta charset="utf-8"> 
+
+# Subpixel shifts
+![-](imgs/header.png)
+
+## Parallax judder
+I have a [Roku] streaming device. When it's idle, it shows a deep purple parallax scrolling background. This background is irritating -- not because the artwork is bad, but because the scrolling visibly judders. The slowest moving layers in the distance
+are moving at a few pixels per second, or less. And the consequently, in the distant layers, images are shifted left by one pixel once every half second. These pixels are pretty large on a big screen television, and the individual steps are quite noticeable. 
+
+![An image with parallax scrolling, a bit like the Roku backdrop.]()
+
+**Example parallax scrolling set "Mountain Dusk"[https://opengameart.org/content/mountain-at-dusk-background] by Luis Zuno, CC0**
+
+![Close-up of a slow moving area. The juddering is noticeable.]()
+
+## The problem
+This might seem unavoidable. When the background images are rendered, they are probably rendered via a pixel copy: something like `blit(src, dest, w, h, src_x, src_y, dest_x, dest_y)`. These coordinates `src_x, src_y, dest_x, dest_y` would typically be integers, and will result 
+chopping out a rectangular block of pixels from `src` and writing it into `dest` with some pixel offset. In such a model, horizontal scrolling is implemented with a large `src` image, and a `src_x` that increments every `n` frames. This is generally fine if this increment happens frequently (a fast scroll might even increment `src_x` by more than one pixel per frame); perceptually, the apparent optical flow is continuous. At slow speeds, however, the illusion of continuous movement lets up. 
+
+These effects are particularly noticeable in cases with small, frequent pixel shifts, like a high-frequency oscillation: 
+
+![]()
+
+## Solutions
+### Interpolation
+How should we fix this? If we restrict ourselves to straight pixel copying, there's nothing we can do: one pixel is the smallest unit of displacement. We need subpixel shifts. 
+
+One way would be to delegate this to a rendering pipeline like OpenGL; texture a quad, and then use texture filtering to apply linear interpolation when the pixels are rendered into the framebuffer. In practice, that's what I'd do if that was available. This would typically by bilinear interpolation -- the value in an output pixel is a weighted average of the four input pixels that cover that pixel, weighted by the coverage area:
+
+![]()
+
+```python
+
+
+def make_bilinear_interpolator(img):    
+    def interpolate(x,y):        
+        # get fractional coordinates
+        yi, yf = np.floor(y), y-np.floor(y)
+        xi, xf = np.floor(x), x-np.floor(x)
+        # factorised into three equivalent interpolations here 
+        # A----B
+        # |    |
+        # |    |
+        # C----D
+        #
+        # A-top-B
+        #    |
+        #   ctr
+        #    |
+        # C-bot-D
+        A, B = img[xi, yi], img[xi+1, yi]
+        C, D = img[xi, yi+1], img[xi+1, yi+1]
+        top = A * (1-xf) + B * xf
+        bot = C * (1-xf) + D * xf
+        ctr = top * (1-yf) + bot * yf
+        return ctr        
+        
+    return interpolate
+```
+
+This works, but is it correct? The well-known article [A pixel is not a little square](https://www.americanscientist.org/article/a-pixel-is-not-a-little-square) should make the answer obvious: no. It's not terrible, but it is not an accurate way of implementing a subpixel shift. 
+
+### Convolution
+One way to apply a single pixel shift is by convolving an image with a filter that is all-black, but with one offset pixel:
+
+![]()
+
+This convolution will take an input image, and output an image shifted left one pixel. We can make any shift by changing the filter:
+
+![]()
+
+#### Subpixel convolutions
+Can we write a convolution filter for a subpixel shift? Yes. The equivalent of the linear interpolation above would use a convolution with four non-zero elements:
+
+![]()
+
+The *exact* subpixel shift has a closed form. We treat an array of pixels as regularly spaced samples; we can recover the underlying analogue signal exactly by *sinc interpolation*, where the value at $$f(x,y) = \sum_i \sum_j f[i,j] \operatorname{sinc}(\sqrt((i-x)^2 + (j-y)^2))$$ -- for any output position $x,y$, we sum the contribution of *every* pixel (here ranging over $i,j$) weighted by the sinc function. $$sinc(x) = \frac{\sin(\pi x)}{\pi x}$$
+
+![]()
+
+To get an exact subpixel shift, we could:
+* recover the continuous signal $f(x,y)$ using the formula above
+* then resample the signal at a new set of pixel coordinates
+
+That's easy, but a lot of computation. A naive Python implementation:
+
+```python
+def sinc(x):
+    return np.sin(np.pi * x) / (np.pi * x)
+
+
+def make_sinc_interpolator(img):
+    r, c = img.shape[0:2]
+    def interpolate(x,y):
+        value = img[0,0]*0 # work with any number of chans.
+        for i in r:
+            for j in c:
+                d = np.sqrt((y - i)**2 + (x-j)**2)
+                weight = sinc(d)
+                value += weight * img[i,j]
+        return value
+    return interpolate
+```
+
+
+
+
+
+
+
+[John H Williamson](https://johnhw.github.io)
+
+[GitHub](https://github.com/johnhw) / [@jhnhw](https://twitter.com/jhnhw)
+
+<link rel="stylesheet" href="../global/style.css" type="text/css" ></link>
+<script>
+window.markdeepOptions = {tocStyle:'none'};</script>
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js" charset="utf-8"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js" charset="utf-8"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
