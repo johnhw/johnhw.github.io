@@ -11,11 +11,11 @@
 Experiments are generally driven by a *state machine*, where state transitions move participants from one part of an experimental trial to another. In the very simplest experiments there are a fixed sequence of tasks that are executed one after the other, identically for all users. More complex experiments will have logical groupings of tasks (e.g. into conditions). Some of these task groupings will only be taken by some subsets of users. Some experiments will have conditional execution of subtasks (such as repeating a trial until a success criterion, or branching tasks depending on previous choices). An subtask might be ended by a user action, or a time out. The ordering of the (some) of the transitions is often shuffled between users or repetitions; for example, counterbalancing condition order to mitigate learning effects in a within-subjects study.
 
 ## Experiment states and paths
-Experimental software needs to manage the transition between states. These nested state machines are well-represented by Harel's [statecharts](https://statecharts.dev/what-is-a-statechart.html), though drawing the statechart for an experiment is often much too complicated to be worthwhile. It's easier just to implement the code.
+Experimental software needs to manage the transition between states. These nested state machines are well-represented by Harel's [statecharts](https://statecharts.dev/what-is-a-statechart.html), though drawing the statechart for an experiment is often much too complicated to be worthwhile to draw. It's easier just to implement the code.
 
 ### State machine example
 
-These experiment states are typically hierarchically structured and ordered. For example, imagine a Fitts' law style pointing task (testing how fast people can click on targets with a pointing device). We might have
+These experiment states are typically hierarchically grouped and ordered. For example, imagine a Fitts' law style pointing task (testing how fast people can click on targets with a pointing device). We might have a grouped hierarchy of states:
 
 * Two pointing devices: mouse with inertia (A) and mouse without inertia (B)
 * Two types of task: static pointing, tracking moving objects
@@ -23,7 +23,11 @@ These experiment states are typically hierarchically structured and ordered. For
 * Three repetitions of each target acquisition.
 * In between each repetition there might be a cooldown and countdown phase
 
+![The nested states for the experiment described above.](nested_states.png)
+
 ---
+
+This might have some specific structure:
 
 * Each user uses *either* the inertia or the without inertia pointing device (between groups)
 * Each performs the task type (static, moving) in counterbalanced order. 
@@ -31,7 +35,7 @@ These experiment states are typically hierarchically structured and ordered. For
 * We'd have some initial welcome and information screens, and a debriefing page at the very end. 
 * Difficulty levels might be randomised with a task. 
 
-This means that the states have an order or subset of valid states which has to be determined for each user. In more complex experiments, the order may only be known at run-time, e.g. if a more difficult task will only be presented if an easier task has already been completed.
+This means that the states have an order or subset of valid states which has to be determined for each user. Most orderings are **select one** (e.g. with or without inertia) or a specific **permutation** (e.g. randomly shuffled difficulty). In more complex experiments, the order may only be known at run-time, e.g. if a more difficult task will only be presented if an easier task has already been completed.
 
 ### Paths and state transition
 * A path-like notation is useful to record which state the software is in: `/A/1/2/1` or even better `/Stage:Main/Pointing:Inertia/Movement:Static/ID:5/Rep:1/Target:3/Phase:Cooldown` 
@@ -70,41 +74,70 @@ Some convenience functions that just wrap `fsm.subset(attr, values)`:
     
 * One way of representing these changes is to have functions to change state:    
     * `fsm.jump(reason, path)` jump immediately to the given absolute path, logging `reason` (a string) as the reason for the state change.        
-    * `fsm.next(reason, levels=1, normal=True)` when an activity finishes
+    * `fsm.next(reason, levels=1)` when an activity finishes
         * `next("user clicked on target")`
         * `levels` allows `next` to optionally advance "up the hierarchy" e.g. to the next interface type or back to the start of a task.
-            * `levels=-1` repeats the last "element"; `levels=1` advances normally,  `levels=0` does nothing, `levels=2` would skip to the start of the next node one level "up"
-        * `normal` can be used to flag transitions which are "unnatural", like an trial aborted due to equipment failure
+            * `levels=-1` repeats the last "element"; `levels=1` advances normally,  `levels=0` does nothing, `levels=2` would skip to the start of the next node one level "up", `levels=-2` would repeat from one level up, etc.        
 * `src/experiment_states.py` shows how this can be implemented in Python
 
-### States, resuming, context and cache
-Some questions that arise in experimental code:
-1. How is flow control administered? Does an FSM drive a main body of code, or does the code get driven by the FSM?
-1. How do context variables get stored and passed around? How will the logger know that the current user is `BESUT-AGATA`?
-1. How will experimental states be saved and resumed? How would we make use of the `saves` table described above?
+
 
 #### Flow control
-My suggestion is to write experimental software that is driven by the state machine, with an explicit "dispatch" loop, like this:
+My suggestion is to write experimental software that is driven by the state machine, in an event driven fashion. So the structure looks something like:
+
+********************************
+*             +--------+
+*             v        |
+*    UI --> FSM --> system
+*    ^               |
+*    +---------------+       
+******************************** 
+
+The experimental software should otherwise be "stateless" -- so that jumping to state `/Stage:Main/Pointing:Inertia/Movement:Static/ID:5/Rep:1/Target:3/Phase:Cooldown` is a valid thing to do at any arbitrary point, as if it were a web browser jumping to a specific URL. The URL model can literally be implemented in simple cases, with a server or just a collection of static HTML with URLs like `/Stage_Main/Pointing_Inertia/Movement_Static/ID_5/Rep_1/Target_3/Phase_Cooldown.html`.
+
+
+with an explicit "dispatch", like this:
 
 ```python
-def dispatch(fsm, context, cache):    
-    while fsm.state != "COMPLETED" and fsm.state != "ABORTED":
+def dispatch(fsm):    
+    while fsm.state != "COMPLETED":
         if fsm.state == "/intro":
-            intro(context, cache)
+            intro(context, ephemeral)
         if fsm.state.startswith("/main"):
-            main_experiment(context, cache)
+            main_experiment(context, ephemeral)
         # etc.
         if fsm.state=="/debrief"
-            debrief(context, cache)
-        fsm.next(1) # advance to next state
+            debrief(context, ephemeral)        
 ```
 
 This is easier to reason about than spreading state changes about the code (though code could still `jump` or `next` internally if required).
 
+
+## The machine
+
+```python
+class Machine:
+
+    def __init__(self):
+        self.context = {}        
+
+    def init(self):
+
+    def cold_start(self):
+
+    def save(self):        
+
+    def resume(self, query=None):        
+
+    def shutdown(self, safe=False):        
+
+
+```
+
 The three parameters I've used are:
 * `fsm` the state machine, as above
 * `context` a dictionary of variables that represent the current context (like current user id, current trial id) that includes *everything that might need to be serialised to store the current state*.
-* `cache` a dictionary of variables (or any other data type) that represents values to carry around that can be reconstructed and shouldn't be persisted (like a network connection reference, database connection, or a file handle).
+* `ephemeral` a dictionary of variables (or any other data type) that represents values to carry around that can be reconstructed and/or shouldn't be persisted (like a network connection reference, database connection, or a file handle).
 
 ### Context variables
 The `context` dictionary is used to represent the key state of the experiment. A `context` might look like:
@@ -119,36 +152,39 @@ The `context` dictionary is used to represent the key state of the experiment. A
 The experiment can then be `saved`, `loaded` or `inited`:
 
 ```python
-def save_state(context, cache):
+def save_state(context, ephemeral):
     serialised_context = json.dumps(context)    
-    cache.db.execute("INSERT INTO saves VALUES (time, resume_state, user_id, trial_id) VALUES (?,?,?,?)",
-            get_time_string(), serialised_context, context["user_id"], context["trial_id"])
+    ephemeral.db.execute("""INSERT INTO saves VALUES 
+    (time, resume_state, user_id, trial_id) VALUES (?,?,?,?)""",
+            get_time_string(), serialised_context, 
+            context["user_id"], context["trial_id"])
 
-def resume_state(cache):
-    result = cache.db.execute("SELECT resume_state FROM saves ORDER BY rowid DESC LIMIT 1;").fetchone()
+def resume_state(ephemeral):
+    result = ephemeral.db.execute("""SELECT resume_state FROM saves 
+    ORDER BY rowid DESC LIMIT 1;""").fetchone()
     return json.loads(result)
 
 def init_state(fsm_spec, resume=False, **kwargs):    
-    cache = init_cache(**kwargs)
+    ephemeral = init_ephemeral(**kwargs)
     if not resume:
-        # cold start, we need to create both cache and context
+        # cold start, we need to create both ephemeral and context
         context = init_context(**kwargs)
     else:
-        context = resume_state(cache)
-    # attach the FSM, with a callback that "knows" the context and cache
+        context = resume_state(ephemeral)
+    # attach the FSM, with a callback that "knows" the context and ephemeral
     # so has a database handle, etc.
     fsm = FSM(fsm_spec, pre_state_change = 
-            lambda prev, new, reason:log_state(prev, new, reason, context, cache))
+            lambda prev, new, reason:log_state(prev, new, reason, context, ephemeral))
     if context.current_state != fsm.state:
         fsm.jump(context.current_state, "Resumed state")
     # enable debug logging to database
-    attach_debug_log(cache.db)
-    return context, cache
+    attach_debug_log(ephemeral.db)
+    return context, ephemeral
 
 
-def log_state(prev, new, reason, context, cache):
+def log_state(prev, new, reason, context, ephemeral):
     context.current_state = new
-    cache.db.execute("INSERT INTO states (time, prev, new, reason, trial_id) VALUES (?,?,?,?,?)",
+    ephemeral.db.execute("INSERT INTO states (time, prev, new, reason, trial_id) VALUES (?,?,?,?,?)",
             get_time_string(), prev, new, reason, context["trial_id"])
 
 def init_context(user_id, trial_id, **kwargs):
@@ -156,9 +192,9 @@ def init_context(user_id, trial_id, **kwargs):
                "trial_id": ...}
     return context
 
-def init_cache(db_file, **kwargs):
+def init_ephemeral(db_file, **kwargs):
     db_connection = sqlite3.connect(db_file)
-    cache = {"db":db_connection, ...}
+    ephemeral = {"db":db_connection, ...}
 ```
 
 

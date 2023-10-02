@@ -6,7 +6,7 @@
 
 
 # Databases and logging to sqlite
-My view is that experimental logging should be **recorded to a database** as it is being logged. Databases provide guaranteed clean transactions, make it easy to manage multiple related tables, and are extremely fast to query when performing analyses. The convenience of plain text manipulations like `tail logs.csv` is easily replicated with modern tools.
+My view is that experimental logging should be **recorded to a database** as it is being logged. Databases provide guaranteed clean transactions, make it easy to manage multiple related tables, and are extremely fast to query when performing analyses. The convenience of plain text manipulations like `tail logs.csv` is easily replicated with modern tools. Multiple tables make it easy to cleanly record and separate information that is spread over different timescales (e.g. captured variables that vary once per trial like `user_id` or `room_size` versus ones that vary once per second like `x,y,z`).
 
 This post discusses:
 * the reasons to choose sqlite
@@ -19,7 +19,7 @@ This post discusses:
 ## Database choice
 In most cases, I'd use `sqlite` as the database. It's fast, lightweight, available for pretty much everywhere, and there is excellent tooling to explore and manipulate databases. The only case where a heavier duty database like `postgres` might be justifiable would be in concurrent trials (e.g. many simultaneous users in crowdsourced trial), as `sqlite` is designed for single process writers.
 
-I've encountered some logging projects using NoSQL like MongoDB. These are sometimes easier to setup (less schema design etc.) but can be a poor fit to the problem of logging. In particular, a schema is good way of designing a usable and well-thought out log.
+I've encountered some logging projects using NoSQL like MongoDB. These are sometimes easier to setup (less schema design etc.) but can be a poor fit to the problem of logging. In particular, a schema is good way of designing a usable and well-thought out log. DuckDB is highly spoken of, but I've no experience of it as a logging backend.
 
 ## sqlite
 With `sqlite` you have:
@@ -34,7 +34,7 @@ With `sqlite` you have:
 `sqlite` is:
 * extremely efficient;
 * a standard, free and well-documented format that many tools can open and work with;
-* available in virtually all language and OS combinations ([C, C++](https://www.sqlite.org/index.html), [Python](https://docs.python.org/3/library/sqlite3.html) -- built in, [JavaScript](https://github.com/sql-js/sql.js), [Java](https://www.sqlitetutorial.net/sqlite-java/), [R](https://solutions.rstudio.com/db/databases/sqlite/), [MATLAB](https://www.mathworks.com/help/database/ug/sqlite.html)).
+* already available in virtually all language and OS combinations ([C, C++](https://www.sqlite.org/index.html), [Python](https://docs.python.org/3/library/sqlite3.html) -- built in, [JavaScript](https://github.com/sql-js/sql.js), [Java](https://www.sqlitetutorial.net/sqlite-java/), [R](https://solutions.rstudio.com/db/databases/sqlite/), [MATLAB](https://www.mathworks.com/help/database/ug/sqlite.html)).
     * [You don't even need to have an operating system to use sqlite](https://www.sqlite.org/vfs.html).
 
 ### sqlite-utils and datasette
@@ -56,7 +56,7 @@ But even with plain old `sqlite3` installed, you can run simple SQL scripts to c
     * In the worst case, just writing rows to `sqlite` table(s) with a timestamp and a JSON blob is usually better than dumping to a file.
 
 * [Isn't a plain text format best](https://plain-text.co/)?
-    * In many ways, it is. But text formats are most useful for analysis, not as the primary record. Generate plain text *from* a database. This is a scalable and robust way to deal with logs.
+    * In many ways, it is. But text formats are most useful for analysis or archival, not as the primary record. Generate plain text *from* a database. This is a scalable and robust way to deal with logs.
     * Tools like `datasette` make sqlite databases so easy to explore that it mitigates many of the reasons to stick to a plain text format.
 
 * But what if I need to record things that aren't just dates, numbers or strings?
@@ -81,6 +81,9 @@ But even with plain old `sqlite3` installed, you can run simple SQL scripts to c
   * By writing a script to generate the transformed files, you can reliably reproduce all of the data from the database. 
   * It's fine to do the analysis on the CSV files, or a subset of them, if that's what works best -- but it's not great as a format for the master data. 
 
+* Should I create indices (`CREATE INDEX ...`) on the database?
+    * I would not create indices *during* logging -- it's unneccessary and can slow things down. 
+    * Instead, create them *after* the experiment is complete on variables that you know you will be querying frequently (like `user_id` etc.).
 
 
 * How will I analyse a `sqlite` file?
@@ -158,12 +161,12 @@ git commit -m "Log format now in version 2"
 Every experiment will have its own needs. But there are several common table structures I've used:
 
 > In these examples I've replaced timestamps with `x` to make the tables readable.
-> In practice they'd be ISO8601 timestamps, as described in Section 1.
+> In practice they'd be ISO8601 timestamps, as described in Part I.
 
 
 ## The very simplest log
 
-The simplest experiments might just have a single `log` table, and maybe a `notes` table to record additional information. More complicated experiments need a bit more structure. For example, there might be a table
+The simplest experiments might just have a single `log` table, and maybe a `notes` table to record additional information. More complicated experiments need a bit more structure. For example, there might be a table `log` like:
 
 ```
     Timestamp   User    State   Action  Duration  Success
@@ -186,11 +189,11 @@ but this loses much of the power of a SQL database. Still, with JSON support in 
 ```sql
 SELECT 
     json_extract(json, "$.user") as user 
-    json_extract(json, "$.task") as task from log where user='s1' 
-    GROUP BY task ORDER BY timestamp LIMIT 10
+    json_extract(json, "$.task") as task FROM log WHERE user='s1' 
+    GROUP BY task ORDER BY timestamp LIMIT 10;
 ```
 
-to get the 10 first rows for user `s1` separated by task. This type of queries will be slow for big tables.
+to get the 10 first rows for user `s1` separated by task. This type of JSON query will be slow for big tables, however.
 
 ## Prototype tables
 More complex experiments benefit from more structure. Much of this is fairly unchanged from one experiment to the next. The basic tables are usually `users, trials, states, log, notes`.
@@ -353,6 +356,7 @@ There are several useful ideas in these tables:
 
 * Give users randomised, distinct and ideally pronounceable pseudonyms (like ABQ or QUROT-ABEBE), **not sequential numbers or easily confused codes**. 
 * Record accurate, complete timestamps everywhere. This can be invaluable in piecing together what really happened if you forgot to record something.
+* Identify and record machines (and attached devices) accurately.
 * Refer to logical experimental states with a *path-like notation*. For example "A/9/3/1" might mean "group A, trial 9, condition 3, repetition 1"; "A/10/Info" might mean "group A, trial 10, information page". See [the next section](part_iii_state_machines.md.html) for a more thorough discussion of path notations for states.
 * Record changes of this logical state path in a separate table, and store the current state along with the primary log(s).
 * Think about how you will stop and resume experiments: you should have some form of snapshot state that can be serialised and resumed from. A good test of this is to always start a new trial by writing a snapshot to the log, and immediately resuming from it.
@@ -366,6 +370,7 @@ Some example queries using the table structure above:
 * The number of log entries for each user. `SELECT COUNT(*) FROM log GROUP BY user` 
 * The number of times each  machine was started `SELECT COUNT(*) FROM runs WHERE action="START" GROUP BY hostname`
 
+A simple validation script can be built around this type of query; then spot-checks can be a case of simply running `sqlite3 logs.db < validate.sql` to check the database is in a valid state and report the basic statistics.
 
 # Tips and tools for working with sqlite logs
 

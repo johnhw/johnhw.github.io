@@ -5,11 +5,17 @@
 [Back to the series on logging](index.md.html)        
 
 # <a id="advice"> Advice and war stories </a>
+This article condenses years of tears, frustration and lost data into some broad recommendations. In summary:
+
+* Use a good, proven format. I recommend a sqlite database.
+* Test log files thoroughly, before and during experiments.
+* Write tooling to simulate, validate and backup experimental logs.
+* Take care with timestamps.
+* Allocate a Keeper of Logs.
 
 ## Problems
-I have supervised many, many students creating experimental logs (and some professionals!) and *virtually all of them* had serious problems at some stage. Ones I have seen:
+I have supervised many, many students creating experimental logs (and some professionals!) and *virtually all of them* had serious problems at some stage. There's definitely a tendency to feel that logging is just "printing out some numbers to a file" -- a few lines to be bolted onto an existing demo to make an experimental platform. Logging problems I have personally seen include:
 
-    
     * Files not being flushed after writing and crashes truncating files, often to 0 bytes;
     * Older files being overwritten by new ones because of poor naming conventions;
     * Dodgy custom CSV writers that don't correctly deal with quotes, UTF8 characters, or commas in strings;
@@ -41,13 +47,14 @@ Most such problems are ironed out in pilot tests; but some slip through and can 
     * Timestamps should come from clocks synchronised with NTP to a reliable time server.
     * Ideally these should be ISO 8601 format string dates like `2022-08-30T15:46:26.585824+01:00`, with **timezone**, at least millisecond precision
         * (`date -Ins` will generate a proper timestamp at the command line in Unix systems...)
-        * You can record everything in UTC (which has some advantages, particularly that lexicographic order=time order), but then it can be difficult to align lab notes or recollections with the data without converting to the local time first.
+        * You can record everything in UTC (which has some advantages, particularly that lexicographic order=time order), but then it can be difficult to align lab notes or personal recollections with the data without converting to the local time first.
         * If recording in UTC, record the machine's local time zone somewhere too.
+        * Recording UTC nanoseconds since the epoch as an `int64` is a *reasonable* alternative, but it is much less likely to make timing errors obvious.
     * If very precise timing is required in analysis, you may want to store full timestamps *and* a high-precision system timer, like `time.perf_counter_ns()` in Python.
     * Timestamps are a reliable way of working out what *really* happened when. 
     * Timestamps should not be: frame counts (!), milliseconds since the app started, seconds since the epoch, microdays since the birth of Mohamed...
 
-* **Lesson 3**: Data needs to be written sequentially, in a true "ship's log" format, where later execution can never modify an earlier record. Logs are always immutable.
+* **Lesson 3**: Data needs to be written sequentially, in a true "ship's log" format, where later execution can never modify an earlier record. Logs are always immutable and append-only.
 
 * **Lesson 4**: If multiple threads or processes might need to contribute to the log, a separate process/thread should be dedicated to queue and write log files. Alternatively, each process/device/thread should write its own log file and the results should be merged in a post-processing step after all experiments are concluded. Ideally, both. 
 
@@ -105,16 +112,17 @@ It's worth taking the time to write a simple validator script, either as part of
 * Verification that all values lie inside ranges given by a schema;
 * Checking for null or repeated values/rows;
 
-This isn't a substitute for a keen eye spot-checking the data, but it's a good safety precaution.
+This isn't a substitute for a keen eye spot-checking the data, but it's a good safety precaution. It's particularly useful to have a log format that can easily be queried. A database is ideal in this regard, but tools like `jq` can provide similar functionality for JSON files. A format that is hard to query effectively is riskier to use.
 
 ### Network and multi-device logging
-Some experiments involve multiple devices operating simultaneously. This adds complexity.
+Some experiments involve distributed logging with multiple devices operating simultaneously. This adds an order-of-magnitude of complexity.
 
 * Use NTP time synchronisation if at all possible. 
     * If not, make sure all clocks involved are carefully synchronised. On mobile devices, a GPS clock is the most reliable way of doing this if it is available.
 * Make sure every device that might be involved in log records has a reliable and consistent UUID.
     * Most experiments will have devices (e.g. a computer) that have both hardware UUIDs and logical names ("unit5"). Record them both in logs, as well as any other identifying information.
-* If multiple devices or processes are being logged to a central server or process, **log both locally and on the server**. Being able to reconstruct logs (in the worst case) from individual local logs is invaluable, especially if synchronisation goes awry.
+* It is usually easier and safer to log locally and merge post-hoc than to log centrally. In simple cases, logs can be simply be merged and resorted by timestamp.
+* If multiple devices or processes *are* being logged to a central server or process, **log both locally and on the server**. Being able to reconstruct logs (in the worst case) from individual local logs is invaluable, especially if synchronisation goes awry.
 * Multiple processes should always transmit heartbeat messages (e.g. once a second), which should be monitored and logged by the central process -- usually a heartbeat message would just contain a `(UUID, sequence_number, timestamp)` tuple or something similar.
 * Record exact version numbers of interpreters/libraries/etc. somewhere in the log on each execution of the software.
 * ZeroMQ or similar message queue brokers are useful for managing communication between devices and a logging process.
@@ -142,8 +150,8 @@ None of these are ideal. The key issues with "collection of text files" logging:
 * Files still need to be managed. What is a file unit? One user? One task? What if multiple kinds of data need logged? Will they be squeezed into one file, or will the analysis need to stitch things together? How are files named? 
     * A directory filled with `0001.csv, 0002.csv, 0003.csv, 0003_partial_a.csv, 0004.csv` is a nightmare to deal with.    
     * It's even worse if you have to explain it someone else, like yourself in a year's time.
-* Formats like CSV can't easily record everything that might be useful to capture and are limited to a "single table" model -- this often requires either multiple files or lots of repeated data.
-* Formats like JSON/XML/YAML are so flexible that it easy to store up an analysis nightmare. You may well end up storing everything and the kitchen sink, and have no easy way of extracting what you need.
+* Formats like CSV can't easily record everything that might be useful to capture and are limited to a "single table" model -- this often requires either multiple interlinked files or lots of repeated data.
+* Conversely, formats like JSON/XML/YAML are so flexible that it easy to store up an analysis nightmare. You may well end up storing everything and the kitchen sink, and have no easy way of extracting what you need.
     * Loggers which are essentially just "serialise the program state every n seconds" are not usually a good design choice.
     * There is no good lazy solution!
 * Custom formats require parsers that exactly match the generated/written data -- and problems here are usually discovered too late. 
@@ -154,7 +162,7 @@ None of these are ideal. The key issues with "collection of text files" logging:
     * Terrible for everything else!        
 
 ## Conclusion
-* If you're going to write text files, CSV (using a solid library) is a decent choice. 
+* If you're going to write text files and your experiment is simple, CSV (using a solid, proven library) is a decent choice. 
 * Dividing data into files requires thought and care.
 * Logging isn't something you can slap together a few hours before the study starts -- it requires preparation.
 * All text file solutions have problems.
