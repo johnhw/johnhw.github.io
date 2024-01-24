@@ -85,7 +85,6 @@ But even with plain old `sqlite3` installed, you can run simple SQL scripts to c
     * I would not create indices *during* logging -- it's unneccessary and can slow things down. 
     * Instead, create them *after* the experiment is complete on variables that you know you will be querying frequently (like `user_id` etc.).
 
-
 * How will I analyse a `sqlite` file?
     * You can perform exploratory queries with tools like `datasette` or the `sqlite3` command line tool.
         * This is useful for checking things like average task times, or completion rates per group, etc.

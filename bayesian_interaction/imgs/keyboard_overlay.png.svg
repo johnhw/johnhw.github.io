@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   sodipodi:docname="keyboard_overlay.png.svg"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   id="svg907"
+   version="1.1"
+   viewBox="0 0 169.33333 127"
+   height="480"
+   width="640">
+  <defs
+     id="defs901" />
+  <sodipodi:namedview
+     inkscape:window-maximized="0"
+     inkscape:window-y="80"
+     inkscape:window-x="2180"
+     inkscape:window-height="1198"
+     inkscape:window-width="1712"
+     borderlayer="true"
+     units="px"
+     showgrid="false"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="px"
+     inkscape:cy="234.81076"
+     inkscape:cx="425.20862"
+     inkscape:zoom="0.98994949"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
+  <metadata
+     id="metadata904">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <rect
+       ry="7.9375"
+       rx="7.9375"
+       y="44.601189"
+       x="24.946428"
+       height="27.214285"
+       width="44.033638"
+       id="rect1470"
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect1472"
+       width="29.670544"
+       height="27.214287"
+       x="79.941376"
+       y="44.601189"
+       rx="7.9375"
+       ry="7.9375" />
+    <rect
+       ry="7.9375"
+       rx="7.9375"
+       y="44.601189"
+       x="119.2509"
+       height="27.214287"
+       width="29.670544"
+       id="rect1474"
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect1476"
+       width="68.980064"
+       height="27.214287"
+       x="24.946428"
+       y="8.693449"
+       rx="7.9375"
+       ry="7.9375" />
+    <rect
+       ry="7.9375"
+       rx="7.9375"
+       y="7.9852638"
+       x="104.53017"
+       height="27.214287"
+       width="29.670544"
+       id="rect1478"
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
+    <rect
+       ry="7.9375"
+       rx="7.9375"
+       y="84.063454"
+       x="24.679159"
+       height="32.559677"
+       width="171.61156"
+       id="rect1480"
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect1484"
+       width="29.670544"
+       height="27.214287"
+       x="140.87881"
+       y="7.9852638"
+       rx="7.9375"
+       ry="7.9375" />
+    <text
+       id="text1488"
+       y="25.925142"
+       x="33.408688"
+       style="font-size:10.5833px;line-height:1.25;font-family:Onyx;-inkscape-font-specification:Onyx;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Fira Sans';-inkscape-font-specification:'Fira Sans';stroke-width:0.264583"
+         y="25.925142"
+         x="33.408688"
+         id="tspan1486"
+         sodipodi:role="line">Caps Lock</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:1.25;font-family:Onyx;-inkscape-font-specification:Onyx;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="34.210495"
+       y="62.541069"
+       id="text1492"><tspan
+         sodipodi:role="line"
+         id="tspan1490"
+         x="34.210495"
+         y="62.541069"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Fira Sans';-inkscape-font-specification:'Fira Sans';stroke-width:0.264583">Shift</tspan></text>
+    <text
+       id="text1500"
+       y="24.588797"
+       x="115.46043"
+       style="font-size:10.5833px;line-height:1.25;font-family:Onyx;-inkscape-font-specification:Onyx;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Fira Sans';-inkscape-font-specification:'Fira Sans';stroke-width:0.264583"
+         y="24.588797"
+         x="115.46043"
+         id="tspan1498"
+         sodipodi:role="line">A</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:1.25;font-family:Onyx;-inkscape-font-specification:Onyx;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="151.27454"
+       y="24.588797"
+       id="text1504"><tspan
+         sodipodi:role="line"
+         id="tspan1502"
+         x="151.27454"
+         y="24.588797"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Fira Sans';-inkscape-font-specification:'Fira Sans';stroke-width:0.264583">S</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:1.25;font-family:Onyx;-inkscape-font-specification:Onyx;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="91.673439"
+       y="61.204723"
+       id="text1508"><tspan
+         sodipodi:role="line"
+         id="tspan1506"
+         x="91.673439"
+         y="61.204723"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Fira Sans';-inkscape-font-specification:'Fira Sans';stroke-width:0.264583">\</tspan></text>
+    <text
+       id="text1512"
+       y="61.204723"
+       x="130.42752"
+       style="font-size:10.5833px;line-height:1.25;font-family:Onyx;-inkscape-font-specification:Onyx;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Fira Sans';-inkscape-font-specification:'Fira Sans';stroke-width:0.264583"
+         y="61.204723"
+         x="130.42752"
+         id="tspan1510"
+         sodipodi:role="line">Z</tspan></text>
+    <rect
+       ry="7.9375"
+       rx="7.9375"
+       y="44.33392"
+       x="155.0441"
+       height="27.214287"
+       width="29.670544"
+       id="rect1514"
+       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:1.25;font-family:Onyx;-inkscape-font-specification:Onyx;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="166.50891"
+       y="61.204723"
+       id="text1528"><tspan
+         sodipodi:role="line"
+         id="tspan1526"
+         x="166.50891"
+         y="61.204723"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Fira Sans';-inkscape-font-specification:'Fira Sans';stroke-width:0.264583">X</tspan></text>
+  </g>
+</svg>

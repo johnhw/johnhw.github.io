@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:export-ydpi="296.10001"
+   inkscape:export-xdpi="296.10001"
+   inkscape:export-filename="C:\Users\John\Dropbox\research\bayesian_interaction_book\tutorial\imgs\pmf_split.png"
+   sodipodi:docname="pmf_split.svg"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   id="svg1951"
+   version="1.1"
+   viewBox="0 0 210 297"
+   height="297mm"
+   width="210mm">
+  <defs
+     id="defs1945" />
+  <sodipodi:namedview
+     inkscape:window-maximized="1"
+     inkscape:window-y="-8"
+     inkscape:window-x="1912"
+     inkscape:window-height="1377"
+     inkscape:window-width="2560"
+     showgrid="false"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="mm"
+     inkscape:cy="386.58815"
+     inkscape:cx="143.68571"
+     inkscape:zoom="1.4"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
+  <metadata
+     id="metadata1948">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <rect
+       ry="1.5504611"
+       rx="1.3824506"
+       y="54.239582"
+       x="7.9375"
+       height="10"
+       width="100"
+       id="rect2516"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.7;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
+    <rect
+       y="54.239578"
+       x="7.9375"
+       height="10"
+       width="10"
+       id="rect2518"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.7;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.7;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect2520"
+       width="50"
+       height="10"
+       x="17.9375"
+       y="54.239578" />
+    <rect
+       y="54.239578"
+       x="67.9375"
+       height="10"
+       width="10"
+       id="rect2522"
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.7;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.7;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect2524"
+       width="30"
+       height="10"
+       x="77.937508"
+       y="54.239582" />
+    <text
+       id="text2528"
+       y="60.57988"
+       x="10.326857"
+       style="font-size:5.03694px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.125924"
+       xml:space="preserve"><tspan
+         style="stroke-width:0.125924"
+         y="60.57988"
+         x="10.326857"
+         id="tspan2526"
+         sodipodi:role="line">0.1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.03694px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.125924"
+       x="40.261044"
+       y="60.57988"
+       id="text2532"><tspan
+         sodipodi:role="line"
+         id="tspan2530"
+         x="40.261044"
+         y="60.57988"
+         style="stroke-width:0.125924">0.5</tspan></text>
+    <text
+       id="text2536"
+       y="60.57988"
+       x="69.927963"
+       style="font-size:5.03694px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.125924"
+       xml:space="preserve"><tspan
+         style="stroke-width:0.125924"
+         y="60.57988"
+         x="69.927963"
+         id="tspan2534"
+         sodipodi:role="line">0.1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.03694px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.125924"
+       x="89.839546"
+       y="60.57988"
+       id="text2540"><tspan
+         sodipodi:role="line"
+         id="tspan2538"
+         x="89.839546"
+         y="60.57988"
+         style="stroke-width:0.125924">0.3</tspan></text>
+    <text
+       id="text2544"
+       y="50.728321"
+       x="7.4781742"
+       style="font-size:4.30346px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.107587"
+       xml:space="preserve"><tspan
+         style="stroke-width:0.107587"
+         y="50.728321"
+         x="7.4781742"
+         id="tspan2542"
+         sodipodi:role="line">Angry</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.30346px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.107587"
+       x="38.486813"
+       y="50.749332"
+       id="text2548"><tspan
+         sodipodi:role="line"
+         id="tspan2546"
+         x="38.486813"
+         y="50.749332"
+         style="stroke-width:0.107587">Calm</tspan></text>
+    <text
+       id="text2552"
+       y="50.71151"
+       x="65.748306"
+       style="font-size:4.30346px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.107587"
+       xml:space="preserve"><tspan
+         style="stroke-width:0.107587"
+         y="50.71151"
+         x="65.748306"
+         id="tspan2550"
+         sodipodi:role="line">Nervous</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.30346px;line-height:1.25;font-family:'Gill Sans MT';-inkscape-font-specification:'Gill Sans MT';letter-spacing:0px;word-spacing:0px;stroke-width:0.107587"
+       x="86.44558"
+       y="50.71151"
+       id="text2556"><tspan
+         sodipodi:role="line"
+         id="tspan2554"
+         x="86.44558"
+         y="50.71151"
+         style="stroke-width:0.107587">Happy</tspan></text>
+  </g>
+</svg>

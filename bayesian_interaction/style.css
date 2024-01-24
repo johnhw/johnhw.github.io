@@ -1,0 +1,219 @@
+/* palette
+112930 [text]
+EBF2FA [background]
+F46036 [highlight]
+427AA1 [bright]
+395E66 [medium]
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Muli&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Cormorant&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Cardo&display=swap');
+@import url('https://fonts.googleapis.com/css?family=EB+Garamond&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono&display=swap');
+
+body
+{
+    color:#08171b;
+    background: "white"; 
+    font-family: "Muli", serif;
+       
+    width: 50%;    
+    min-width: 10em;
+    line-height: 130%;
+    padding-left: 1%;            
+    text-justify: newspaper;
+    top: 5%;
+    
+
+}   
+
+
+pre.listing
+{    
+    padding: 0.5em;
+    margin-left:2em;
+    font-family: "Fira Mono", monospace;
+    background: #f9f9f9;
+}
+
+.md code 
+{
+    font-family: "Fira Mono", monospace;
+    background: inherit;     
+}
+
+/* reset heading/link fonts to that of body */
+.md a,
+.md div.title, contents, .md .tocHeader,
+.md .nonumberh1, .md .nonumberh2, .md .nonumberh3, .md .nonumberh4, .md .nonumberh5, .md .nonumberh6,
+.md .shortTOC, .md .mediumTOC, .md .longTOC {
+    font-family: inherit;
+    color: inherit;
+
+}
+
+.md h1::before,
+.md h2::before,
+.md h3::before,
+.md h4::before,
+.md h5::before,
+.md h6::before
+{ 
+    width: 3.5em;
+    max-width: 3.5em;
+    display: inline-block;    
+    margin-left: -4.0em;  
+    color: rgba(16, 19, 26);    
+    font-size: 100%;
+    
+} 
+
+.md h1, .md h2, .md h3, .md h4, .md h5, .md h6
+{
+    font-family: "Muli", serif;
+    border: none;
+    font-size: 140%;
+    color: rgb(8, 23, 56);      
+    line-height: 120%;
+    text-justify: none;
+    text-align: left;
+    
+}
+
+.md blockquote
+{
+    background-color: rgba(255, 255, 255, 0.6);
+    padding: 1em;
+    font-style: italic;
+}
+
+.md .admonition.tip::before
+{
+    content: "";
+    
+}
+
+.md .admonition.error::before
+{
+    content: "";
+    
+}
+
+.md .admonition.warning::before
+{ 
+ content: "";   
+}
+
+
+
+.md .admonition
+{
+    border: 3px rgba(0,0,0, 0.1);
+    background-color: rgba(0,0,0, 0.1);
+    border-radius: 4px;
+    padding: 2em;
+    
+
+}
+
+.md .admonition.note 
+{
+    border-left: 0px;
+    background-color: rgba(0,0,0, 0.05);
+
+}
+
+
+.md .admonition.tip
+{
+    background-color: rgba(0,0,0, 0.05); 
+    border: 0px solid black;
+    font-style: italic;
+
+
+}
+
+.md .admonition.warning
+{
+       
+    background-color: rgba(0,0,0, 0.1);
+
+}
+
+.md .admonition.error
+{
+    background-color: rgba(0,0,0, 0.5); 
+    color: white;
+    
+
+}
+
+
+
+
+
+.md a:hover
+{
+    color: #F46036
+}
+
+.md h1
+{    
+    text-transform: uppercase;            
+
+    padding-top: 2em;
+    border-bottom: 0px solid #000000; 
+    width: 100%;
+}
+
+hr 
+{
+    width: 0px;
+}
+
+
+@media screen {
+    body {
+        position: absolute;
+        left: 20%;
+        margin-right: 2em;
+        margin-left: 2em;
+        right: 0px;
+        overflow: auto;
+        max-width: 50em;
+        
+    }
+    
+    .md .longTOC {
+        display: block;
+        /* white-space: nowrap;     */
+        width: 240px;
+        border-right: 1px dashed rgb(211, 210, 210);
+       
+        /* overflow-y:scroll; */
+        font-size: 13px;
+        font-family: inherit;
+        background: rgb(230, 224, 225);
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        bottom:0px;
+        margin: 0px;
+        
+        padding: 0px;
+        padding-left: 10px;
+        padding-right: 20px;
+        overflow-wrap: break-word;
+    }
+
+    .md .tocHeader {
+        display: none;
+    }
+
+    .md .tocTop {
+        display: block;
+    }
+}
+
