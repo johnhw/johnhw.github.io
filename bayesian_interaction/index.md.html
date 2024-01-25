@@ -163,7 +163,7 @@ We know that button 3 was logged, so:
 
 These numbers come directly from our assumption that buttons are pressed with equal likelihood, and so the **likelihoods** of seeing button 3 for each app are (A=0, B=1/4, C=1/9). Given our prior knowledge about the number of apps in use, we can multiply these likelihoods by how likely we thought the particular app was *before* observing the "3". This **prior** was (A=5/10, B=2/10, C=3/10). This gives us: (A=0 * 5/10, B=1/4 * 2/10, C=1/9 * 3/10) = (0, 1/20, 1/30). We can normalise this so it sums to 1 to make it a proper probability distribution: (0, 3/5, 2/5). This is the **posterior** distribution, the probability distribution revised to be compatible with the evidence. We *now* believe there is a 60% chance that app B was used and a 40% chance app C was used.     
 
-\clearpage
+
 
 This is easy to verify if we simulate this model to generate synthetic data. 
 ```python
@@ -190,8 +190,6 @@ Sorting the selected events and colouring them shows the clear pattern that B is
 ![There are 12 Bs and 6 Cs in this random sample; a 66%/33% split close to the expected 60%/40% split.](imgs/app_simulate_sorted.png)
 
 There are two key insights. First, the result of Bayesian inference is not always intuitively obvious, but if we can consider all possible configurations and count the compatible ones, we will correctly infer a probability distribution. Secondly, having a clear understanding of a model in terms of how it generates observations from unobserved parameters -- to be able to simulate the model process -- is a useful way to  understand models and to verify their behaviour.
-
-\clearpage
 
 ### Another observation
 A Bayesian update transforms a probability distribution (over apps, in this case) to another probability distribution. What happens if we see *another* observation? For example, we might next observe that the user next pressed the "2" button on the same app. How does this affect our belief? *We use the posterior from the previous step (A=0, B=0.6, C=0.4) as the new prior*, and repeat the exactly same process to get a new posterior. We can do this process over and over again, as new observations arrive.
@@ -443,8 +441,6 @@ $\beta_1, \beta_0$ are latent variables that describe all possible forms of this
 
 In many scientific models there are many more latent variables than observed variables. Imagine inferring the complex genetic pathways in a biological system from a few sparse measurements of metabolite masses -- there are many latent parameters and low-dimensional observations. In interaction, we sometimes have this problem: for example, modelling social dynamics with many unknown parameters from very sparse measurements. Often, however, we have the opposite problem, particularly when dealing with inference in the control loop: we have a large number of observed variables (e.g. pixels from an image from camera) which are generated from a much smaller small set of latent parameters (e.g. which menu option does the user want). 
 
-
-\clearpage
 ### Simulations and generative models
 
 Bayesian methods were historically called the "method of inverse probability". This is because the way we build Bayesian models by writing down *what we expect to observe given some unobserved parameters*, and **not** *what unobserved parameters we have given some observation*. In other words, we write *forward models*, that have some assumed underlying mechanics, governed by values we do not know. These are often not particularly realistic ways of representing the way the world works, but useful approximations that can lead to insight. We can run these models forward to produce synthetic observations and update our belief about the unobserved (latent) parameters. This is a **generative** approach to modelling; we build models that ought to generate what we observe.
@@ -833,7 +829,6 @@ In the simplest cases non-parametric models like GPs can be used as smooth inter
 We can treat the true position of the hand as an unobserved parameter and estimate it from sensor data using Bayesian inference.  A simple probabilistic filter uses posteriors from the previous time step to form the prior in the following step. To account for the passage of time, *dynamics* are applied to the posterior before it becomes the next prior (Figure [doppler]). These dynamics are a predictive model that moves the distribution forward in time. The dynamics can often be very simple, and can involve parameters that are also simultaneously inferred. For example, we might assume that hand position changes by the current estimated hand velocity over a fixed time interval. We can update both position and velocity using ordinary Bayesian inference; then apply the velocity to the posterior distribution of positions; and feed this forward to the next time step.
 
 Techniques like (unscented [#wan_unscented_2000]) Kalman filters [#babb_how_2015] and particle filters (also called sequential Monte Carlo filtering) make implementing probabilistic filters in interaction problems straightforward -- once the modelling is done -- and reasonably computational efficient.
-\clearpage
 
 # Facets of Bayesian methods for interaction design
 Bayesian approaches intersect with interaction problems in a several ways. Five of these facets are outlined in the sections below:
@@ -923,7 +918,7 @@ One notable problem with Bayesian models is that they can be hard to understand,
 
 Bayesian interaction is the problem of how to display, explain, explore, construct and criticise probabilistic Bayesian models: how and where to put users in the loop in Bayesian modelling. This involves supporting users in making rational and informed decisions, like assessment of risk or of expected value, in comprehending the structure of Bayesian models and the interpretation of their parameters, and in aiding the development of new models and debugging and criticising them. User interaction with Bayesian models has a few important aspects:
 
-* **Visualisation of uncertainty** Distributions are the basis of Bayesian modelling, and so the representation of distributions to users is important, particularly the visualisation of uncertainty [#padilla_uncertainty_2020, hullman_pursuit_2018-1]. People have a hard time understanding distributions and their implications, and this is exacerbated when distributions are over a high-dimensional parameter space. Visualising and summarising distributions in ways that preserve uncertainty are significant challenges in HCI.  Even in simpler problems there can be user-facing uncertainty that should not be elided. Interacting with noisy sensors, like a brain-computer interface, results in uncertain interface state. Reflecting this uncertainty to users could improve interaction, but requires new interface techniques, such as uncertain cursors.
+* **Visualisation of uncertainty** Distributions are the basis of Bayesian modelling, and so the representation of distributions to users is important, particularly the visualisation of uncertainty [#padilla_uncertainty_2020] [#hullman_pursuit_2018-1]. People have a hard time understanding distributions and their implications, and this is exacerbated when distributions are over a high-dimensional parameter space. Visualising and summarising distributions in ways that preserve uncertainty are significant challenges in HCI.  Even in simpler problems there can be user-facing uncertainty that should not be elided. Interacting with noisy sensors, like a brain-computer interface, results in uncertain interface state. Reflecting this uncertainty to users could improve interaction, but requires new interface techniques, such as uncertain cursors.
 
 * **Interactive exploration of Bayesian models** Early work in Bayesian visualisation has focused on static summaries of posteriors. There are many open research questions in user interfaces that support dynamic interaction. Interactive systems to explore possible configurations is the most promising way to communicate large Bayesian models. The ability to slice, brush or tour posterior distributions can reveal structured correlations in the results of inference [#taka_increasing_2020].
 
