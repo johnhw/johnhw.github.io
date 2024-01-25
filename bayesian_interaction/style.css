@@ -183,7 +183,7 @@ hr
         right: 0px;
         overflow: auto;
         max-width: 50em;
-        
+        background: "white";
     }
     
     .md .longTOC {
