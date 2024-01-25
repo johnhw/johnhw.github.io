@@ -654,7 +654,6 @@ These priors are *weakly informative*. These are our conservative rough guesses 
 
 
 !!!
-
     A common question:
 
     * Q: Did we not just **choose** the answer? Couldn't we set the prior to whatever we want to get the answer we want to see?
@@ -667,8 +666,6 @@ These priors are *weakly informative*. These are our conservative rough guesses 
 What do these priors imply? One major advantage of a Bayesian model is that we can draw samples from the prior and see if they look plausible. It's most useful to see these as the lines $MT, ID$ space that $a, b$ imply, even though we are sampling from $a,b,\sigma$. Transforming from the prior distribution over parameters to the observed variables gives us *prior predictive* samples. We can see that the prior chosen can represent many lines, a much more diverse set than we are likely to encounter (Figure [ppc]), and can conclude that our priors are not unreasonably restrictive. Here we are just eyeballing the visualisations as a basic check; in other situations we might compute summary statistics and validate them numerically (e.g. testing that known positive values are positive in the prior predictive).
 
 ![Figure [ppc]: Prior predictive visualisation for the priors we set above. At the top, histograms showing the distribution of the hidden parameters; numbers indicate the (centred) 90% credible interval -- a region in which we believe the true parameter is 90% likely to lie within. Below, those parameters used to draw possible lines compatible with the prior model. We see that there are very many linear models compatible with our model. Our prior distributions are at least flexible enough to be compatible with our genuine prior beliefs.](imgs/fitts_base_prior.png)
-
-\clearpage
 
 ### Inference
 Now imagine we run a pointing experiment with users and capture $MT, ID$ pairs and that are plotted in Figure [fitts_data]. 
