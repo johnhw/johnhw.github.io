@@ -468,7 +468,7 @@ For example, in a probabilistic user interface, at some point, we have to perfor
 In a probabilistic user interfaces, we might have just updated the distribution over the possible options based on a voice command, $P(\text{option}|\text{voice})$ from a speech recogniser. Which option should be actuated? The probabilities don't tell us. We also need a **decision rule**, which will typically involve attribution of **utility** (goodness, danger, etc.) to those options. 
 
 ![An example of utility in decision making. This table shows possible voice commands that could be compatible with an utterance recorded. The speech recogniser gives some probability to different actions $A$ according to the acoustics $P(A|\text{speech})$. This is combined
-with a prior from a language model that assigns probability to different commands based on prior usage $P(A|\text{language})$. These are combined into a posterior probability $P(A|\text{speech, language})$. For each action, there is also a possible benefit to the user $U(Right)$ (in this case they are all equal) and a possible cost $U(Wrong)$, which might capture the work required to undo the action if it were triggered in error. Given this table, the *least likely* option is "reply Paul" but it is the option with highest *expected utility* **(Exp. U)** -- the rational choice.](imgs/utility_table.png)
+with a prior from a language model that assigns probability to different commands based on prior usage $P(A|\text{language})$. These are combined into a posterior probability $P(A|\text{speech, language})$. For each action, there is also a possible benefit to the user $U(Right)$ (in this case they are all equal) and a possible cost $U(Wrong)$, which might capture the work required to undo the action if it were triggered in error and the opportunity cost of *not* triggering the intended action. Given this table, the *least likely* option is "reply Paul" but it is the option with highest *expected utility* **(Exp. U)** -- the rational choice.](imgs/utility_table.png)
 
 
 The decision rule will combine the probability and the utility to identify which (if any) option should be actuated. A simple model is maximum expected utility: choose the action that maximises the average product of the probability and utility. This is rational way to make decisions: choose the decision that is most likely to maximise the "return" (or minimise the "loss") in the long run. But there are many decision rules that are possible which will be appropriate in different situations, such as:
@@ -730,7 +730,7 @@ Fitts' law isn't a particularly *generative* way to think about pointing motions
        
 ## Bayesian workflows
 
-This worked example outlined the main steps in Bayesian modelling for this example. In general, how should we go about building Bayesian models in an interactive systems context? What do we need to define? How do we know if we have been successful? How do we communicate results? *Workflows* for Bayesian modelling are an active area of research [#gelman_bayesian_2020, schad_toward_2020].A high-level summary of the general process is as follows:
+This worked example outlined the main steps in Bayesian modelling for this example. In general, how should we go about building Bayesian models in an interactive systems context? What do we need to define? How do we know if we have been successful? How do we communicate results? *Workflows* for Bayesian modelling are an active area of research [#gelman_bayesian_2020] [#schad_toward_2020].A high-level summary of the general process is as follows:
 
 * **Define a model**. Ideally, we want a *generative* model that describes how we believe the world works, governed by a set of *parameters* that can vary. For example, say we were modelling the effect of frame rate variation on VR sickness. We would want to create a model that when fed a sequence of frame timings would output a probability of induced nausea. It would be possible but less desirable to use a general model like logistic regression.  A better model would be constructed based on psychological and physiological models with parameters in meaningful units that represents our best knowledge of how the process truly works. 
 * **Construct priors.** We need to specify priors for every parameter in the model. We seek to find priors that are as informative as possible (and thus give us the most precise inferences with the least data) without introducing undue bias. Priors should be elicited from expert knowledge; from previous studies or published literature; or if nothing else, informed guesses with clear justifications. Priors should **not** be established by looking at the specific data under consideration! "Fitting" priors to data and then running inference with the same data inevitably biases the results.
@@ -841,7 +841,7 @@ Bayesian approaches intersect with interaction problems in a several ways. Five 
 
 ## Optimal mind-reading: How can Bayesian methods work out what a user wants to do?
 
-Bayesian methods can be used to represent the problem of interaction itself -- how does information flow from human to computer? This can be used to derive robust models based around inference of intention. Strong prior models of what we expect users to do allow us to extract maximum value from input and preserve uncertainty about user intent. If we already know what intentions are *likely* to be expressed, we do not need as much information to reliably determine the true intention. This is a model of interaction founded in the idea of the interface as a concentrator of belief, whose mechanics are driven by the logic of probability. Such an interface represents, manipulates and displays uncertainty as a first-class value [#schwarz_framework_2010, schwarz_monte_2011]. This can extend throughout the interaction loop, from low-level inference about user state from sensors [#rogers_anglepose_2011], interpretation of pointing actions [#grossman_probabilistic_2005], probabilistic GUIs [#buschek_probui_2017], text entry [#ward_dasherdata_2000], error-tolerant interfaces [#williamson_efficient_2020], motion correlation [#velloso_probabilistic_2021] and 2D selection [#liu_bignav_2017-1]. 
+Bayesian methods can be used to represent the problem of interaction itself -- how does information flow from human to computer? This can be used to derive robust models based around inference of intention. Strong prior models of what we expect users to do allow us to extract maximum value from input and preserve uncertainty about user intent. If we already know what intentions are *likely* to be expressed, we do not need as much information to reliably determine the true intention. This is a model of interaction founded in the idea of the interface as a concentrator of belief, whose mechanics are driven by the logic of probability. Such an interface represents, manipulates and displays uncertainty as a first-class value [#schwarz_framework_2010] [#schwarz_monte_2011]. This can extend throughout the interaction loop, from low-level inference about user state from sensors [#rogers_anglepose_2011], interpretation of pointing actions [#grossman_probabilistic_2005], probabilistic GUIs [#buschek_probui_2017], text entry [#ward_dasherdata_2000], error-tolerant interfaces [#williamson_efficient_2020], motion correlation [#velloso_probabilistic_2021] and 2D selection [#liu_bignav_2017-1]. 
 
 We can conceive of an interface as a system that tries to *infer* what the user wants. We formulate a distribution over possible outcomes (e.g. over items on a menu), and an associated prior (e.g. from historical frequencies of interaction). We then update this probability distribution using observed inputs (e.g. the sequence of motion events from a pointing device). 
 
@@ -926,9 +926,9 @@ Bayesian interaction is the problem of how to display, explain, explore, constru
 
 
 ## A higher perspective: How can Bayesian ideas help us understand human cognition?
-There is a school of thought that interprets the thought processes of humans and other living beings as an approximate form of Bayesian inference. This "Bayesian brain" hypothesis [#friston_history_2012, friston_free-energy_2010] implies that we are all engaged in some form of approximate Bayesian inference, from low-level sensory perception through to higher-level cognition. It posits a model of cognition where organisms form predictive models of the world [#griffiths_optimal_2006], and revise them in light of sensory evidence in a manner compatible with Bayesian belief updates. This framework gives a structure by which causal origins of perceptual stimuli can be inferred by organisms, and links to information-theoretic models of behaviour and perception [#jensen_information_2013]. 
+There is a school of thought that interprets the thought processes of humans and other living beings as an approximate form of Bayesian inference. This "Bayesian brain" hypothesis [#friston_history_2012] [#friston_free-energy_2010] implies that we are all engaged in some form of approximate Bayesian inference, from low-level sensory perception through to higher-level cognition. It posits a model of cognition where organisms form predictive models of the world [#griffiths_optimal_2006], and revise them in light of sensory evidence in a manner compatible with Bayesian belief updates. This framework gives a structure by which causal origins of perceptual stimuli can be inferred by organisms, and links to information-theoretic models of behaviour and perception [#jensen_information_2013]. 
 
-This is a controversial hypothesis, and one that is hard to gather definitive evidence for or against. However, it can be a powerful lens through which to examine how we will react and behave with interactive systems. Regardless of its biological "truth", Bayesian cognitive models are amenable to computation and can provoke new thoughts on how to engineer interactions. As a concrete example, Rao [#rao_dynamic_1997] models visual cue integration as a Kalman filter, a recursive Bayesian update process. This form of model postulates that living beings combine predictive models of how the world is expected to evolve and evaluate this against evidence from sensory channels. In human-computer interaction, research on understanding how users interpret data visualisations [#kim_bayesian_2019, wu_towards_2017] can be modelled by representing users with a Bayesian cognition and the consequent belief updates they would perform under this model.
+This is a controversial hypothesis, and one that is hard to gather definitive evidence for or against. However, it can be a powerful lens through which to examine how we will react and behave with interactive systems. Regardless of its biological "truth", Bayesian cognitive models are amenable to computation and can provoke new thoughts on how to engineer interactions. As a concrete example, Rao [#rao_dynamic_1997] models visual cue integration as a Kalman filter, a recursive Bayesian update process. This form of model postulates that living beings combine predictive models of how the world is expected to evolve and evaluate this against evidence from sensory channels. In human-computer interaction, research on understanding how users interpret data visualisations [#kim_bayesian_2019], [#wu_towards_2017] can be modelled by representing users with a Bayesian cognition and the consequent belief updates they would perform under this model.
 
 # Bayesian pasts and futures
 
@@ -1065,6 +1065,15 @@ Conference on Human Factors in Computing Systems*, 1–12.
 in Controlling the Amplitude of Movement.” *Journal of Experimental
 Psychology* 47 (6): 381.
 
+[#friston_free-energy_2010] Friston, Karl. 2010. “The Free-Energy Principle: A Unified Brain
+Theory?” *Nature Reviews Neuroscience* 11 (2): 127–38.
+<https://doi.org/10.1038/nrn2787>.
+
+[#friston_history_2012] Friston, Karl. 2012. “The History of the Future of the Bayesian Brain.”
+*Neuroimage* 62-248 (2): 1230–33.
+<https://doi.org/10.1016/j.neuroimage.2011.10.004>.
+
+
 [#gabry_visualization_2019]: Gabry, Jonah, Daniel Simpson, Aki Vehtari, Michael Betancourt, and
 Andrew Gelman. 2019. “Visualization in Bayesian Workflow.” *Journal of
 the Royal Statistical Society: Series A (Statistics in Society)* 182
@@ -1085,6 +1094,12 @@ to Modeling Two-Dimensional Pointing.” *ACM Transactions on
 Computer-Human Interaction* 12 (3): 435–59.
 <https://doi.org/10.1145/1096737.1096741>.
 
+[#hullman_pursuit_2018-1]: Hullman, Jessica, Xiaoli Qiao, Michael Correll, Alex Kale, and Matthew
+Kay. 2018a. “In Pursuit of Error: A Survey of Uncertainty Visualization
+Evaluation.” *IEEE Transactions on Visualization and Computer Graphics*
+25: 903–13. <https://doi.org/10.1109/tvcg.2018.2864889>.
+
+
 [#jensen_information_2013]: Jensen, Greg, Ryan D. Ward, and Peter D. Balsam. 2013. “INFORMATION:
 THEORY, BRAIN, AND BEHAVIOR.” *Journal of the Experimental Analysis of
 Behavior* 100 (3): 408–31. <https://doi.org/10.1002/jeab.49>.
@@ -1098,6 +1113,12 @@ Informative.” *The American Statistician* 68 (1): 42–51.
 “When (Ish) Is My Bus? User-Centered Visualizations of Uncertainty in
 Everyday, Mobile Predictive Systems.” In *Proceedings of the 2016 Chi
 Conference on Human Factors in Computing Systems*, 5092–5103.
+
+[#kim_bayesian_2019]: Kim, Yea-Seul, Logan A. Walls, Peter Krafft, and Jessica Hullman. 2019.
+“A Bayesian Cognition Approach to Improve Data Visualization.” In
+*Proceedings of the 2019 CHI Conference on Human Factors in Computing
+Systems*, 1–14.
+
 
 [#kostakos_big_2015]: Hutchins, Edwin L., James D. Hollan, and Donald A. Norman. 1985. “Direct
 Manipulation Interfaces.” *Human-Computer Interaction* 1 (4): 311–38.
@@ -1133,6 +1154,9 @@ Emerged Triumphant from Two Centuries of C*. Yale University Press.
 [#oulasvirta_computational_2018]: Oulasvirta, Antti, Xiaojun Bi, and Andrew Howes. 2018. *Computational
 Interaction*. Oxford University Press.
 
+[#padilla_uncertainty_2020]: Padilla, Lace, Matthew Kay, and Jessica Hullman. 2020. “Uncertainty
+Visualization.” 
+
 [#phelan_prior_2019]: Phelan, Chanda, Jessica Hullman, Matthew Kay, and Paul Resnick. 2019.
 “Some Prior (s) Experience Necessary: Templates for Getting Started with
 Bayesian Analysis.” In *Proceedings of the 2019 CHI Conference on Human
@@ -1151,6 +1175,25 @@ Annual Conference on Human Factors in Computing Systems - CHI ’11*, ACM Press.
 [#salvatier_probabilistic_2016]: Salvatier, John, Thomas V. Wiecki, and Christopher Fonnesbeck. 2016a.
 “Probabilistic Programming in Python Using PyMC3.” *PeerJ Computer
 Science* 2: e55.
+
+[#schwarz_framework_2010]: Schwarz, Julia, Scott Hudson, Jennifer Mankoff, and Andrew D. Wilson.
+2010. “A Framework for Robust and Flexible Handling of Inputs with
+Uncertainty.” In *Proceedings of the 23nd Annual ACM Symposium on User
+Interface Software and Technology*, 47–56.
+
+[#schwarz_monte_2011]: Schwarz, Julia, Jennifer Mankoff, and Scott Hudson. 2011. “Monte Carlo
+Methods for Managing Interactive State, Action and Feedback Under
+Uncertainty.” In *Proceedings of the 24th Annual ACM Symposium on User
+Interface Software and Technology*, 235–44.
+
+[#schwarz_architecture_2015]: Schwarz, Julia, Jennifer Mankoff, and Scott E. Hudson. 2015. “An
+Architecture for Generating Interactive Feedback in Probabilistic User
+Interfaces.” In *Proceedings of the 33rd Annual ACM Conference on Human
+Factors in Computing Systems*, 2545–54.
+
+[#schad_toward_2020]: Schad, Daniel J., Michael Betancourt, and Shravan Vasishth. 2020.
+“Toward a Principled Bayesian Workflow in Cognitive Science.”
+*Psychological Methods*.
 
 [#shannon_mathematical_1948-2]: Shannon, Claude E. 1948a. “A Mathematical Theory of Communication.”
 *Bell System Technical Journal* 27 (3): 379–423.
@@ -1182,6 +1225,10 @@ Data Entry Interface Using Continuous Gestures and Language Models.” In
 Roderick Murray-Smith. 2020. “Efficient Human-Machine Control with
 Asymmetric Marginal Reliability Input Devices.” *Plos One* 15 (6):
 e0233603.
+
+[#wu_towards_2017]: Wu, Yifan, Larry Xu, Remco Chang, and Eugene Wu. 2017. “Towards a
+Bayesian Model of Data Visualization Cognition.” In *IEEE Visualization
+Workshop on Dealing with Cognitive Biases in Visualisations (DECISIVe)*.
 
 [#zio_literature_2013]: Zio, Enrico, and Nicola Pedroni. 2013. “Literature Review of Methods for
 Representing Uncertainty.” *FonSCI* 2013-03 (ISSN 2100-3874).
