@@ -185,9 +185,9 @@ If we run this simulation, and highlight the events where `button=3`, we get out
 
 ![Figure [simulate_app]: Simulating the predictive model and highlighting elements where button 3 is pressed.](imgs/app_simulate_highlight.png)
 
-Sorting the selected events and colouring them shows the clear pattern that B is favoured over C (Figure [\1]).
+Sorting the selected events and colouring them shows the clear pattern that B is favoured over C (Figure [simulate_sorted]).
 
-![There are 12 Bs and 6 Cs in this random sample; a 66%/33% split close to the expected 60%/40% split.](imgs/app_simulate_sorted.png)
+![Figure [simulate_sorted]: There are 12 Bs and 6 Cs in this random sample; a 66%/33% split close to the expected 60%/40% split.](imgs/app_simulate_sorted.png)
 
 There are two key insights. First, the result of Bayesian inference is not always intuitively obvious, but if we can consider all possible configurations and count the compatible ones, we will correctly infer a probability distribution. Secondly, having a clear understanding of a model in terms of how it generates observations from unobserved parameters -- to be able to simulate the model process -- is a useful way to  understand models and to verify their behaviour.
 
@@ -698,7 +698,7 @@ This question might be a suitable proxy for whether these 40 measurements are fr
 
 Since we have a predictive model, we can easily compute derived values. For example, we could ask the concrete question: how much longer would it take to select a width 2 distance 5 target using this second device than the first device. We can push this through our model and obtain the distribution shown in Figure [fitts_change].
 
-![Figure [fitts_change].The predicted change in movement time to acquire a width 2 target 5 units away when switching from the first pointing device to the second. We expect the second device to take about 1 second longer to acquire this target, but there is reasonably large uncertainty.](imgs/fitts_mt1_mt2.png)
+![Figure [fitts_change]: The predicted change in movement time to acquire a width 2 target 5 units away when switching from the first pointing device to the second. We expect the second device to take about 1 second longer to acquire this target, but there is reasonably large uncertainty.](imgs/fitts_mt1_mt2.png)
 
 ### What's the point?
 Why did we do this? What benefits did a Bayesian approach give us?
