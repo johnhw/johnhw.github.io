@@ -171,7 +171,8 @@
   
   <hr>
 
-  <div class="score">
+  <button class="button" @click="toggleScore"> Show/hide score </button>
+  <div class="score" v-if="showScore">
     <p> <b> Score </b> </p>
     <p>Accuracy: {{ accuracyScore.toFixed(2) }} 
     Cross-entropy: {{ crossEntropyScore.toFixed(2) }} </p>
@@ -266,6 +267,7 @@
       stateText: ' ',
       setpointText: ' ',
       sliderValue: 0,
+      showScore: false,
       confidenceProb: 0.5,
       targetState: 'X',
       state: '',
@@ -333,6 +335,9 @@
         this.crossEntropyScore = crossEntropy / setpointHistory.length;
     
         
+      },
+      toggleScore() {
+        this.showScore = !this.showScore;
       },
       setModel(modelName)
         {
