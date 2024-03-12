@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binary game</title>
+
+  <!-- Vue.js -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #124E78;
+      color: white;
+    }
+
+    #app {
+      text-align: center;
+    }
+
+    #task {
+      font-size: 24px;
+      margin: 20px;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+    }
+
+    .output {
+      font-size: 32px;
+      margin: 20px;
+      height: 30px;
+      color: black;
+      font-family:'Courier New', Courier, monospace;
+      text-align: center;
+      display: inline-block;
+      width: 200px;
+      
+     
+    }
+
+    .actionLabel {
+      font-size: 18px;
+      margin: 20px;
+      height: 30px;
+      width: 100px;
+      display: inline-block;
+      text-align: right;
+    }
+
+    .button {
+      background-color: #4CAF50;
+      border: none;
+      color: black;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 32px;
+      margin: 12px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 15px;
+    
+    }
+
+    .button1
+    {
+        background-color: #F0F0C9;
+        border: 1px solid #000000;
+        font-size: 64px;
+   
+    }
+
+    .button2
+    {
+        background-color: #D74E09;
+        border: 1px solid #000000;
+        font-size: 64px;
+
+    }
+
+    .explanation {
+      text-align: center;
+      margin: 20px;
+      /* center align the div */
+      max-width: 40%;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #ffffff;
+      border-radius: 15px;
+      
+    }
+
+    .description {
+      text-align: center;
+      margin: 20px;     
+      max-width: 40%;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #ffffff;
+      border-radius: 15px;
+      padding: 20px;;
+    }
+
+    
+    .score {
+      text-align: center;
+      margin: 20px;     
+      max-width: 60%;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid #ffffff;
+      border-radius: 15px;
+      padding: 20px;;
+    }
+
+    .outputDiv {
+      text-align: center;
+      margin: 20px;      
+      max-width: 40%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    input[type="range"] {
+      width: 200px;
+      margin: 10px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <h1> Binary game </h1>
+  <div class="description">
+  <label for="modelSelect">Game model</label>
+    <select id="modelSelect" v-model="selectedOption" @change="handleSelectionChange">
+      <option v-for="(value, key) in gameModels" :key="key" :value="key">{{ key }}</option>
+    </select>
+    <hr>
+      <p> <b> {{ gameModels[selectedOption].name }} </b> </p>
+      <p> {{ gameModels[selectedOption].description }} </p>
+  </div>
+    <button class="button" @click="resetGame">Reset</button>    
+  <hr>
+  <p id="task">Acquire state {{ targetState }}</p>
+  <p for="slider">Confidence that I'm currently in state {{ targetState }} </p>  
+  <input type="range" v-model="sliderValue" min="-20" max="20" @input="probSliderChange">
+  <p>p={{ confidenceProb }}</p>
+
+  <button class="button button1" @click="changeText(0)">0</button>
+  <button class="button button2" @click="changeText(1)">1</button>  
+  <div class="outputDiv">
+    
+    
+  <span class="actionLabel">Action inputs a_t:</span> <span class="output" id="inputText" v-html="inputText"></span>
+  <br>
+  <span class="actionLabel">Emission outputs e_t:</span><span class="output" id="outputText" v-html="outputText"></span>
+  </div>
+  <br>
+  
+  <hr>
+
+  <div class="score">
+    <p> <b> Score </b> </p>
+    <p>Accuracy: {{ accuracyScore.toFixed(2) }} 
+    Cross-entropy: {{ crossEntropyScore.toFixed(2) }} </p>
+    <p> <b> Total score: {{ (accuracyScore + crossEntropyScore).toFixed(2) }} </b> </p>
+    <span class="actionLabel">Hidden state s_t:</span> <span class="output" id="stateText" v-html="stateText"></span><br>
+    <span class="actionLabel">Setpoint p_t:</span> <span class="output" id="setpointText" v-html="setpointText"></span>
+
+  </div>
+
+  <div class="explanation">
+    <p> 
+        <b> Explanation </b>        
+    </p>
+    <p>
+        The system is partially-observable binary hidden Markov model. The state is hidden, but the action and the emission are observable. Both transition and emission depend on both the hidden state and the action.<br>
+        Actions, observations, and states are binary. In this UI, actions are in <b>{0, 1}</b>; observations are in <b>{A, B}</b>; and states are in <b>{X, Y}</b>. <br><br>
+
+        Transitions are a function (s_t, a_t) -> s_{t + 1}, and emissions are a function of (s_t, a_t) -> e_t.        
+        
+    </p>
+    <p> </p>
+
+  </div>
+</div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      gameModels: {
+        'fully_observable': {'name':'Fully Observable', 
+                            'description':'The state is fully observable; no stochasticity in the emissions. Actions change the state directly. No internal dynamics.',
+                             'init_state_prob':1.0,
+                             'init_emission_prob':1.0,
+                             'transition_matrix':[[1.0, 0.0],
+                                                  [1.0, 0.0]],
+                              'emission_matrix':[[1.0, 0.0],
+                                                  [1.0, 0.0]], 
+                            },
+        'stochastic_emission': {'name':'Stochastic Emission', 
+                            'description':'Emissions are stochastic. Actions change the state directly. No internal dynamics.',
+                             'init_state_prob':1.0,
+                             'init_emission_prob':1.0,
+                             'transition_matrix':[[1.0, 0.0],
+                                                  [1.0, 0.0]],
+                              'emission_matrix':[[0.8, 0.2],
+                                                  [0.9, 0.1]], 
+                            },
+        'observable_no_control': {'name':'Observable, No Control', 
+                            'description':'The state is fully observable; no stochasticity in the emissions. No control over the state.',
+                             'init_state_prob':1.0,
+                             'init_emission_prob':1.0,
+                             'transition_matrix':[[0.25, 0.25],
+                                                  [0.75, 0.75]],
+                              'emission_matrix':[[1.0, 1.0],
+                                                  [0.0, 0.0]], 
+                            },
+
+          'observable_false_control': {'name':'Observable, False Control', 
+          'description':'The state is hidden. The action is revealed in the emission. The action has no effect on the state.',
+            'init_state_prob':1.0,
+            'init_emission_prob':1.0,
+            'transition_matrix':[[0.25, 0.25],
+                                [0.75, 0.75]],
+            'emission_matrix':[[1.0, 0.0],
+                                [1.0, 0.0]], 
+          },
+          'mixed': {'name':'Mixed', 
+          'description':'The state is partially hidden. Actions have some effect.',
+            'init_state_prob':1.0,
+            'init_emission_prob':1.0,
+            'transition_matrix':[[0.9, 0.1],
+                                [0.9, 0.1]],
+            'emission_matrix':[[0.8, 0.2],
+                                [0.8, 0.2]], 
+          },
+          'random': {'name':'*Random',
+          'description':'Randomly generated model.',
+            'init_state_prob':1.0,
+            'init_emission_prob':1.0,
+            'transition_matrix':[[0.5, 0.5],
+                                [0.5, 0.5]],
+            'emission_matrix':[[0.5, 0.5],
+                                [0.5, 0.5]], 
+          },
+          
+      },
+      modelName: '',
+      selectedOption: 'fully_observable',
+      outputText: ' ',
+      inputText: ' ',
+      stateText: ' ',
+      setpointText: ' ',
+      sliderValue: 0,
+      confidenceProb: 0.5,
+      targetState: 'X',
+      state: '',
+      emission: '',
+      action: '',
+      maxHistory: 20,
+      history: {
+        action: [],
+        state: [],
+        emission: [],
+        setpoint: [],
+        confidence: [],
+      },      
+      accuracyScore: 0,
+      crossEntropyScore: 0,
+      setpoint: 0,
+      modelDescription: '',
+      transition_matrix: [],
+      emission_matrix: [],        
+      // formatting for the history to show
+      historyFormats:
+      {
+        action:["<span style='background-color: #F0F0C9;'>0</span>", "<span style='background-color: #D74E09;'>1</span>"],
+        emission:["<span style='background-color: #F0F0C9;'>A</span>", "<span style='background-color: #D74E09;'>B</span>"],        
+        state:["<span style='background-color: #F0F0C9;'>X</span>", "<span style='background-color: #D74E09;'>Y</span>"],
+        setpoint:["<span style='background-color: #F0F0C9;'>X</span>", "<span style='background-color: #D74E09;'>Y</span>"],
+      },
+    },
+    
+ 
+    mounted() {
+      this.setModel(this.selectedOption);      
+    },
+    methods: {
+      score() {    
+        // (inverse) Hamming distance between setpoint and state    
+        let setpointHistory = this.history.setpoint;
+        let stateHistory = this.history.state;
+        let score = 0;
+        for (let i = 0; i < setpointHistory.length; i++) {
+          if (setpointHistory[i] == stateHistory[i]) {
+            score++;
+          }
+        }
+        let polarity = 0;
+        // account for the fact that the setpoint could be 0 or 1
+        // as states are symmetric and label is unknown
+        if (score < 0.5 * setpointHistory.length) {
+          score = setpointHistory.length - score;
+          polarity = 1;
+        }
+
+        // compute cross-entropy between confidence and state
+        let confidenceHistory = this.history.confidence;
+        let crossEntropy = 0;
+        for (let i = 0; i < confidenceHistory.length; i++) {
+          let state = stateHistory[i];
+          if(polarity == 1) // account for the fact that the setpoint could be 0 or 1
+          {
+            state = 1 - state;
+          }
+          crossEntropy += state[i] * Math.log(confidenceHistory[i]) + (1 - state[i]) * Math.log(1 - confidenceHistory[i]);
+        }
+        this.accuracyScore = score / setpointHistory.length;
+        this.crossEntropyScore = crossEntropy / setpointHistory.length;
+    
+        
+      },
+      setModel(modelName)
+        {
+          this.modelName = modelName;
+          
+          this.transition_matrix = this.gameModels[modelName].transition_matrix;
+          this.emission_matrix = this.gameModels[modelName].emission_matrix;
+          this.resetGame();
+        },
+        probSliderChange(event) {
+            // decimal logits
+            this.confidenceProb = 1 / (1 + (Math.pow(10.0, -this.sliderValue/10.0)));
+            this.confidenceProb = this.confidenceProb.toFixed(2);
+        },
+        resetGame()
+        {
+            this.state = this.randomOutcome(this.gameModels[this.modelName].init_state_prob, 0, 1);
+            this.emission = this.randomOutcome(this.gameModels[this.modelName].init_emission_prob, 0, 1);
+            /* Special random case */
+            if(this.modelName=='*Random')
+            {
+              this.transition_matrix = [[Math.random(), Math.random()], [Math.random(), Math.random()]];
+              this.emission_matrix = [[Math.random(), Math.random()], [Math.random(), Math.random()]];
+              this.gameModels[this.modelName].init_emission_prob = Math.random();
+              this.gameModels[this.modelName].init_state_prob = Math.random();
+            }
+            
+            this.history.action = [];
+            this.history.state = [];
+            this.history.emission = [];
+            this.history.setpoint = [];
+            this.history.confidence = [];
+            this.updateDisplay();
+        },
+
+        handleSelectionChange(event) {
+            this.setModel(this.selectedOption);
+        },        
+        emit()
+        {
+            let emissions = this.emission_matrix;
+            this.emission = this.randomOutcome(emissions[this.state][this.action], 0, 1);
+            this.history.emission.push(this.emission);
+        },
+
+        transit()
+        {
+            let transitions = this.transition_matrix;
+            this.state = this.randomOutcome(transitions[this.state][this.action], 0, 1);
+            this.history.state.push(this.state);
+            this.history.action.push(this.action);
+            this.history.setpoint.push(this.setpoint);
+            this.history.confidence.push(this.confidenceProb);
+            this.emit();
+            this.score();
+        },
+
+        randomOutcome(p, outcome1, outcome2) {
+            if (Math.random() < p) {
+                return outcome1;
+            } else {
+                return outcome2;
+            }
+        },
+      updateDisplay()
+      {
+        let actionHistory = this.history.action.slice(-this.maxHistory);
+        let emissionHistory = this.history.emission.slice(-this.maxHistory);
+        let actionHistoryFormatted = actionHistory.map((action) => this.historyFormats.action[action]);
+        let emissionHistoryFormatted = emissionHistory.map((emission) => this.historyFormats.emission[emission]);
+        this.inputText =  actionHistoryFormatted.join('');
+        this.outputText = emissionHistoryFormatted.join('');
+        // and state and setpoint history
+        let stateHistory = this.history.state.slice(-this.maxHistory);
+        let setpointHistory = this.history.setpoint.slice(-this.maxHistory);
+        let stateHistoryFormatted = stateHistory.map((state) => this.historyFormats.state[state]);
+        let setpointHistoryFormatted = setpointHistory.map((setpoint) => this.historyFormats.setpoint[setpoint]);
+        this.stateText = stateHistoryFormatted.join('');
+        this.setpointText = setpointHistoryFormatted.join('');
+
+      },
+      changeText(action) {        
+        this.action = action;
+        this.transit();
+        
+        this.updateDisplay();
+
+                
+   
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
