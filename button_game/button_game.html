@@ -122,6 +122,12 @@
       padding: 20px;;
     }
 
+
+    .info 
+    {      
+      font-weight: bold;
+    }
+
     .outputDiv {
       text-align: center;
       margin: 20px;      
@@ -152,16 +158,19 @@
   </div>
     <button class="button" @click="resetGame">Reset</button>    
   <hr>
-  <p id="task">Acquire state {{ targetState }}</p>
-  <p for="slider">Confidence that I'm currently in state {{ targetState }} </p>  
-  <input type="range" v-model="sliderValue" min="-20" max="20" @input="probSliderChange">
-  <p>p={{ confidenceProb }}</p>
-
+  <p id="task">Task: Acquire state {{ targetState }}</p>
+  <p class="info"> Inputs </p>
   <button class="button button1" @click="changeText(0)">0</button>
   <button class="button button2" @click="changeText(1)">1</button>  
   <div class="outputDiv">
-    
-    
+  
+    <p class="info"> Confidence </p>
+    <p for="slider">Confidence that I'm currently in state {{ targetState }} </p>  
+    <input type="range" v-model="sliderValue" min="-20" max="20" @input="probSliderChange">
+    <p>p={{ confidenceProb }}</p>
+        
+
+  <p class="info"> History </p>
   <span class="actionLabel">Action inputs a_t:</span> <span class="output" id="inputText" v-html="inputText"></span>
   <br>
   <span class="actionLabel">Emission outputs e_t:</span><span class="output" id="outputText" v-html="outputText"></span>
@@ -170,7 +179,7 @@
   
   <hr>
 
-  <button class="button" @click="toggleScore"> Show/hide score </button>
+  <button class="button" @click="toggleScore"> Show/hide score and hidden states </button>
   <div class="score" v-if="showScore">
     <p> <b> Score </b> </p>
     <p>Accuracy: {{ accuracyScore.toFixed(2) }} 
