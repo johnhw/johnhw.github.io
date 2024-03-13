@@ -37,6 +37,39 @@ This might have some specific structure:
 
 This means that the states have an order or subset of valid states which has to be determined for each user. Most orderings are **select one** (e.g. with or without inertia) or a specific **permutation** (e.g. randomly shuffled difficulty). In more complex experiments, the order may only be known at run-time, e.g. if a more difficult task will only be presented if an easier task has already been completed.
 
+
+#### Flow control
+My suggestion is to write experimental software that is driven by the state machine, in an event driven fashion. So the structure looks something like:
+
+********************************
+*             +--------+
+*             v        |
+*    UI --> FSM --> system
+*    ^               |
+*    +---------------+       
+******************************** 
+
+The experimental software should otherwise be "stateless" -- so that jumping to state `/Stage:Main/Pointing:Inertia/Movement:Static/ID:5/Rep:1/Target:3/Phase:Cooldown` is a valid thing to do at any arbitrary point, as if it were a web browser jumping to a specific URL. The URL model can literally be implemented in simple cases, with a server or just a collection of static HTML with URLs like `/Stage_Main/Pointing_Inertia/Movement_Static/ID_5/Rep_1/Target_3/Phase_Cooldown.html`.
+
+
+The main logic of the experiment can have an explicit "dispatch", like this:
+
+```python
+def dispatch(fsm):    
+    while fsm.state != "COMPLETED":
+        if fsm.state == "/intro":
+            intro(context, ephemeral)
+        if fsm.state.startswith("/main"):
+            main_experiment(context, ephemeral)
+        # etc.
+        if fsm.state=="/debrief"
+            debrief(context, ephemeral)        
+```
+
+This is easier to reason about than spreading state changes about the code (though code could still `jump` or `next` internally if required).
+
+
+
 ### Paths and state transition
 * A path-like notation is useful to record which state the software is in: `/A/1/2/1` or even better `/Stage:Main/Pointing:Inertia/Movement:Static/ID:5/Rep:1/Target:3/Phase:Cooldown` 
 * The path notation with `attr:value` style elements is particularly helpful when describing orderings or subsets; it can also be translated to/from a flat dictionary:
@@ -80,37 +113,6 @@ Some convenience functions that just wrap `fsm.subset(attr, values)`:
             * `levels=-1` repeats the last "element"; `levels=1` advances normally,  `levels=0` does nothing, `levels=2` would skip to the start of the next node one level "up", `levels=-2` would repeat from one level up, etc.        
 * `src/experiment_states.py` shows how this can be implemented in Python
 
-
-
-#### Flow control
-My suggestion is to write experimental software that is driven by the state machine, in an event driven fashion. So the structure looks something like:
-
-********************************
-*             +--------+
-*             v        |
-*    UI --> FSM --> system
-*    ^               |
-*    +---------------+       
-******************************** 
-
-The experimental software should otherwise be "stateless" -- so that jumping to state `/Stage:Main/Pointing:Inertia/Movement:Static/ID:5/Rep:1/Target:3/Phase:Cooldown` is a valid thing to do at any arbitrary point, as if it were a web browser jumping to a specific URL. The URL model can literally be implemented in simple cases, with a server or just a collection of static HTML with URLs like `/Stage_Main/Pointing_Inertia/Movement_Static/ID_5/Rep_1/Target_3/Phase_Cooldown.html`.
-
-
-with an explicit "dispatch", like this:
-
-```python
-def dispatch(fsm):    
-    while fsm.state != "COMPLETED":
-        if fsm.state == "/intro":
-            intro(context, ephemeral)
-        if fsm.state.startswith("/main"):
-            main_experiment(context, ephemeral)
-        # etc.
-        if fsm.state=="/debrief"
-            debrief(context, ephemeral)        
-```
-
-This is easier to reason about than spreading state changes about the code (though code could still `jump` or `next` internally if required).
 
 
 ## The machine

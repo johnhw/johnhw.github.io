@@ -13,8 +13,7 @@
       font-family: 'Arial', sans-serif;
       display: flex;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
+      justify-content: center;      
       margin: 0;
       background-color: #124E78;
       color: white;
@@ -204,7 +203,7 @@
     data: {
       gameModels: {
         'fully_observable': {'name':'Fully Observable', 
-                            'description':'The state is fully observable; no stochasticity in the emissions. Actions change the state directly. No internal dynamics.',
+                            'description':'The state is fully observable; no stochasticity in the emissions. Actions change the state directly. No internal dynamics. Equiv. linear: xd=0x+Iu; y=Ix+0u',
                              'init_state_prob':1.0,
                              'init_emission_prob':1.0,
                              'transition_matrix':[[1.0, 0.0],
@@ -213,7 +212,7 @@
                                                   [1.0, 0.0]], 
                             },
         'stochastic_emission': {'name':'Stochastic Emission', 
-                            'description':'Emissions are stochastic. Actions change the state directly. No internal dynamics.',
+                            'description':'Emissions are stochastic. Actions change the state directly. No internal dynamics. xd=0x+Iu; y=Ix+0u+sigma',
                              'init_state_prob':1.0,
                              'init_emission_prob':1.0,
                              'transition_matrix':[[1.0, 0.0],
@@ -222,7 +221,7 @@
                                                   [0.9, 0.1]], 
                             },
         'observable_no_control': {'name':'Observable, No Control', 
-                            'description':'The state is fully observable; no stochasticity in the emissions. No control over the state.',
+                            'description':'The state is fully observable; no stochasticity in the emissions. No control over the state. xd=Ax+0u+sigma; y=Ix+0u',
                              'init_state_prob':1.0,
                              'init_emission_prob':1.0,
                              'transition_matrix':[[0.25, 0.25],
@@ -232,7 +231,7 @@
                             },
 
           'observable_false_control': {'name':'Observable, False Control', 
-          'description':'The state is hidden. The action is revealed in the emission. The action has no effect on the state.',
+          'description':'The state is hidden. The action is revealed in the emission. The action has no effect on the state. xd=Ax+0u+sigma; y=0x+Iu',
             'init_state_prob':1.0,
             'init_emission_prob':1.0,
             'transition_matrix':[[0.25, 0.25],
